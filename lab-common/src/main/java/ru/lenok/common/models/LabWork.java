@@ -47,7 +47,8 @@ public class LabWork implements Comparable<LabWork> {
     }
 
     public boolean validate() {
-        return coordinates.validate() && discipline.validate() && id != null &&
+        return coordinates != null && coordinates.validate() &&
+                discipline != null && discipline.validate() && id != null &&
                 id > 0 && name != null && !name.equals("") && creationDate != null &&
                 minimalPoint > 0 && description.length() <= 2863 && description != null &&
                 difficulty != null && discipline != null;

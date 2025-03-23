@@ -1,1 +1,34 @@
-{"map":{"uhgg":{"id":2,"name":"newName","coordinates":{"x":2.2,"y":4.3},"creationDate":"2025-02-26T17:31:11.4474695","minimalPoint":27.89,"description":"blablabla","difficulty":"VERY_HARD","discipline":{"name":"mumu","practiceHours":340}},"uhvc":{"id":1,"name":"huiiu","coordinates":{"x":8.7,"y":9.6},"creationDate":"2025-02-26T17:31:11.4464144","minimalPoint":88.5,"description":"htddervjlokk","difficulty":"IMPOSSIBLE","discipline":{"name":"mkmjhy","practiceHours":120}}}}
+{
+  "bubuka": {
+    "id": 3,
+    "name": "buuuuuu",
+    "coordinates": {
+      "x": "bjbk",
+      "y": 67.0
+    },
+    "creationDate": "2025-03-23T13:36:52.3604223",
+    "minimalPoint": 87.0,
+    "description": "kjhvc",
+    "difficulty": "VERY_EASY",
+    "discipline": {
+      "name": "kjjbhhgv",
+      "practiceHours": 99
+    }
+  },
+  "jnbbjb": {
+    "id": 4,
+    "name": "njkjop",
+    "coordinates": {
+      "x": 98.4,
+      "y": 90.1
+    },
+    "creationDate": "2025-03-23T13:36:52.36193",
+    "minimalPoint": 90.0,
+    "description": "jopoojnj",
+    "difficulty": "NORMAL",
+    "discipline": {
+      "name": "njiokne",
+      "practiceHours": 234
+    }
+  }
+}

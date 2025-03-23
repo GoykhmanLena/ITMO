@@ -46,8 +46,8 @@ public class JsonReader {
 
         } catch (FileNotFoundException e) {
             throw new IOException("JSON файл не найден: " + filename, e);
-        } catch (JsonSyntaxException e) {
-            throw new IOException("Ошибка в JSON формате", e);
+        } catch (JsonSyntaxException | IllegalStateException e) {
+            System.err.println("Ошибка в JSON формате, коллекция будет очищена");
         }
 
         return map;
