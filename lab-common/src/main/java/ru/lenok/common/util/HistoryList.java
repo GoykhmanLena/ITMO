@@ -13,7 +13,7 @@ public final class HistoryList {
 
     public String getLastNCommands(int n) {
         StringBuffer sb = new StringBuffer();
-        for (int i = historyList.size() - 1; i >= 0 || i >= historyList.size() - n; i--) {
+        for (int i = historyList.size() - 1; i > 0 && i > historyList.size() - n; i--) {
             sb.append(historyList.get(i) + "\n");
         }
         return sb.toString();
