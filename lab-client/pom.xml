@@ -11,6 +11,11 @@
     <version>1.0-SNAPSHOT</version>
     <name>lab-client</name>
 
+    <properties>    <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.version>17.0.8</javafx.version>    <javafx.platform>win</javafx.platform> <!-- поменяй на linux/mac, если нужно -->
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -72,6 +77,16 @@
             <artifactId>postgresql</artifactId>
             <version>42.6.0</version>
         </dependency>
+        <dependency>    <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>    <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier></dependency>
+        <dependency>    <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>    <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier></dependency>
+        <dependency>    <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>    <version>${javafx.version}</version>
+            <classifier>${javafx.platform}</classifier></dependency>
     </dependencies>
+
 
 </project>
