@@ -2,6 +2,7 @@ package ru.lenok.server.collection;
 
 import lombok.Data;
 import ru.lenok.common.models.LabWork;
+import ru.lenok.common.models.LabWorkWithKey;
 import ru.lenok.server.daos.DBConnector;
 import ru.lenok.server.daos.LabWorkDAO;
 
@@ -11,6 +12,7 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 public class LabWorkService {
@@ -32,9 +34,12 @@ public class LabWorkService {
         }
     }
 
-    public Map<String, LabWork> getMap() {
+    public List<LabWorkWithKey> getLabWorkList() {
         synchronized (monitor) {
-            return memoryStorage.getMapSafe();
+            Map<String, LabWork> mapSafe = memoryStorage.getMapSafe();
+            return mapSafe.entrySet().stream()
+                    .map(e -> new LabWorkWithKey(e.getKey(), e.getValue()))
+                    .collect(Collectors.toList());
         }
     }
 

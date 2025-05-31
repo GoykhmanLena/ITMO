@@ -13,26 +13,26 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import ru.lenok.common.models.LabWork;
+import ru.lenok.common.models.LabWorkWithKey;
 
+import java.util.List;
 import java.util.Map;
 
 public class MainForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
     private final ClientService clientService = ClientService.getINSTANCE();
-    private final ObservableList<LabWork> labWorks = FXCollections.observableArrayList();
+    private final ObservableList<LabWorkWithKey> labWorks = FXCollections.observableArrayList();
+    private final LabWorkTableView tableView = new LabWorkTableView(labWorks);
     private final LabWorkCanvasPane labCanvas = new LabWorkCanvasPane(labWorks);
-    private Map<String, LabWork> labWorkMap;
 
-    public MainForm(Map<String, LabWork> labWorkMap) {
-        this.labWorkMap = labWorkMap;
-        labWorks.addAll(labWorkMap.values());
+    public MainForm(List<LabWorkWithKey> labWorkList) {
+        labWorks.addAll(labWorkList);
     }
 
     public void start(Stage stage) {
         BorderPane root = new BorderPane();
         root.setPrefSize(1200, 800);
 
-        // Top - Language and user info
         HBox topBar = new HBox(10);
         topBar.setPadding(new Insets(10));
         topBar.setAlignment(Pos.TOP_RIGHT);
@@ -45,7 +45,7 @@ public class MainForm {
 
         langBox.setOnAction(e -> {
             languageManager.setLanguage(langBox.getSelectionModel().getSelectedItem());
-            start(stage); // restart for simplicity
+            start(stage);
         });
 
         Region spacer = new Region();
@@ -53,7 +53,6 @@ public class MainForm {
         topBar.getChildren().addAll(userLabel, spacer, langBox);
         root.setTop(topBar);
 
-        // SplitPane - left (table) and right (canvas)
         SplitPane splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
 
@@ -61,10 +60,7 @@ public class MainForm {
         leftPane.setPadding(new Insets(10));
         leftPane.setVgrow(splitPane, Priority.ALWAYS);
 
-        LabWorkTableView tableView = new LabWorkTableView(labWorks);
         Button addButton = new Button("Add");
-        // addButton.setOnAction(e -> new EditDialog(null, labWorks).showAndWait());
-
         leftPane.getChildren().addAll(tableView, addButton);
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
@@ -73,6 +69,18 @@ public class MainForm {
 
         splitPane.getItems().addAll(leftPane, rightPane);
         root.setCenter(splitPane);
+
+        // СИНХРОНИЗАЦИЯ ВЫДЕЛЕНИЯ
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
+            if (selected != null) {
+                labCanvas.highlight(selected);
+            }
+        });
+
+        labCanvas.setOnLabWorkSelected(labWork -> {
+            tableView.getSelectionModel().select(labWork);
+            tableView.scrollTo(labWork);
+        });
 
         Scene scene = new Scene(root);
         stage.setTitle("LabWork Manager");

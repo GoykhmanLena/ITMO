@@ -12,7 +12,9 @@ import ru.lenok.common.CommandWithArgument;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWork;
+import ru.lenok.common.models.LabWorkWithKey;
 
+import java.util.List;
 import java.util.Map;
 
 public class LoginForm {
@@ -50,8 +52,8 @@ public class LoginForm {
                     CommandBehavior show = commandDefinitions.get("show");
                     CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user);
                     CommandResponse commandResponse = clientService.getConnector().sendCommand(showRequest);
-                    Map<String, LabWork> labWorkMap = (Map<String, LabWork>) commandResponse.getOutputObject();
-                    new MainForm(labWorkMap).start(stage);
+                    List<LabWorkWithKey> labWorkList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
+                    new MainForm(labWorkList).start(stage);
                 } catch (Exception ex) {
                     errorLabel.setText(ex.getMessage());
                 }
