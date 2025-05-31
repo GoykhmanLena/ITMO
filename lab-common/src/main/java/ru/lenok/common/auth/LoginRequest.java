@@ -10,4 +10,5 @@ import java.io.Serializable;
 public class LoginRequest implements Serializable {
     private final User user;
     private final boolean isRegister;
+    private final int serverNotificationPort;
 }

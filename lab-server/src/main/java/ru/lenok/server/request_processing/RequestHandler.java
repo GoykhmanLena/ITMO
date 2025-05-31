@@ -1,5 +1,6 @@
 package ru.lenok.server.request_processing;
 
+import com.google.common.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.lenok.common.CommandRequest;
@@ -13,6 +14,7 @@ import ru.lenok.common.models.LabWork;
 import ru.lenok.server.commands.CommandName;
 import ru.lenok.server.commands.CommandRegistry;
 import ru.lenok.server.commands.IHistoryProvider;
+import ru.lenok.server.connectivity.ClientAddress;
 import ru.lenok.server.connectivity.IncomingMessage;
 import ru.lenok.server.connectivity.ResponseWithClient;
 import ru.lenok.server.services.UserService;
@@ -36,20 +38,23 @@ public class RequestHandler implements IHistoryProvider {
     public CommandController getCommandController() {
         return commandController;
     }
+    private Cache<ClientAddress, ClientAddress> clientsCache;
 
-    public RequestHandler(CommandRegistry commandRegistry, UserService userService) {
+    public RequestHandler(CommandRegistry commandRegistry, UserService userService, Cache<ClientAddress, ClientAddress> clientsCache) {
         this.userService = userService;
         this.commandRegistry = commandRegistry;
         this.commandController = new CommandController(commandRegistry);
         this.userController = new UserController(userService, commandRegistry.getClientCommandDefinitions());
+        this.clientsCache = clientsCache;
     }
 
     public ResponseWithClient handleIncomingMessage(IncomingMessage message) {
-        Object response = onReceive(message.getMessage());
+        Object response = onReceive(message);
         return new ResponseWithClient(response, message.getClientIp(), message.getClientPort());
     }
 
-    public Object onReceive(Object inputData) {
+    public Object onReceive(IncomingMessage message) {
+        Object inputData = message.getMessage();
         logger.info("Обрабатываю сообщение: " + inputData);
         if (inputData instanceof CommandRequest) {
             CommandRequest commandRequest = (CommandRequest) inputData;
@@ -71,6 +76,7 @@ public class RequestHandler implements IHistoryProvider {
             if (historyList == null) {
                 historyList = new HistoryList();
                 historyByClients.put(userFromDb.getId(), historyList);
+                //TODO clientsCache
             }
             historyList.addCommand(commandName);
             return commandController.handle(commandRequest);
@@ -84,6 +90,8 @@ public class RequestHandler implements IHistoryProvider {
             }
             if (loginResponse.getError() == null) {
                 historyByClients.put(loginResponse.getUserId(), new HistoryList());
+                ClientAddress clientAddress = new ClientAddress(message.getClientIp(), loginRequest.getServerNotificationPort());
+                clientsCache.put(clientAddress, clientAddress);
             }
             return loginResponse;
         }

@@ -1,13 +1,17 @@
 package ru.lenok.server;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.lenok.common.CommandResponse;
 import ru.lenok.common.models.LabWork;
+import ru.lenok.common.models.LabWorkWithKey;
 import ru.lenok.server.collection.LabWorkService;
 import ru.lenok.server.commands.CommandRegistry;
 import ru.lenok.server.commands.IHistoryProvider;
+import ru.lenok.server.connectivity.ClientAddress;
 import ru.lenok.server.connectivity.IncomingMessage;
-import ru.lenok.server.connectivity.ResponseWithClient;
 import ru.lenok.server.connectivity.ServerConnectionListener;
 import ru.lenok.server.connectivity.ServerResponseSender;
 import ru.lenok.server.daos.*;
@@ -38,6 +42,8 @@ public class ServerApplication implements IHistoryProvider {
     private UserService userService;
     private ProductService productService;
     private OfferService offerService;
+    private Cache<ClientAddress, ClientAddress> clientsCache;
+    private Object notificationMonitor;
 
     public ServerApplication(Properties properties) {
         this.properties = properties;
@@ -51,22 +57,26 @@ public class ServerApplication implements IHistoryProvider {
 
 
         logger.info("Сервер работает");
-            try {
-                while (true){
-                    IncomingMessage incomingMessage = serverConListener.listenAndReceiveMessage();
-                    CompletableFuture
-                            .supplyAsync(
-                                    () ->
-                                    reqHandler.handleIncomingMessage(incomingMessage), processingPool)
-                            .thenAcceptAsync(response ->
-                                    serverRespSender.sendMessageToClient(response.getResponse(), response.getClientIp(), response.getClientPort()), sendingExecutor);
-                            }
-            } catch (Exception e) {
-                logger.error("Ошибка, ", e);
+        try {
+            while (true) {
+                IncomingMessage incomingMessage = serverConListener.listenAndReceiveMessage();
+                CompletableFuture
+                        .supplyAsync(
+                                () -> reqHandler.handleIncomingMessage(incomingMessage)
+                                , processingPool)
+                        .thenAcceptAsync(
+                                response -> serverRespSender.sendMessageToClient(response.getResponse(), response.getClientIp(), response.getClientPort())
+                                , sendingExecutor);
             }
+
+        } catch (Exception e) {
+            logger.error("Ошибка, ", e);
+        }
     }
 
     private void init() {
+        //Thread collectionNotification = new Thread(() -> sendNotificationsToClients());
+        //collectionNotification.start();
         try {
             port = Integer.parseInt(properties.getProperty("listenPort"));
         } catch (NumberFormatException e) {
@@ -76,9 +86,12 @@ public class ServerApplication implements IHistoryProvider {
 
         try {
             initServices();
+            clientsCache = CacheBuilder.newBuilder()
+                    .expireAfterWrite(5, TimeUnit.HOURS)
+                    .build();
             this.commandRegistry = new CommandRegistry(labWorkService, productService, offerService, this);
 
-            reqHandler =  new RequestHandler(commandRegistry, userService);
+            reqHandler = new RequestHandler(commandRegistry, userService, clientsCache);
 
             serverConListener = new ServerConnectionListener(port);
 
@@ -87,6 +100,22 @@ public class ServerApplication implements IHistoryProvider {
         } catch (Exception e) {
             logger.error("Ошибка, ", e);
             System.exit(1);
+        }
+    }
+
+    private void sendNotificationsToClients() {
+        while (true) {
+            try {
+                synchronized (notificationMonitor) {
+                    notificationMonitor.wait();
+                    ConcurrentMap<ClientAddress, ClientAddress> clientsCacheMap = clientsCache.asMap();
+                    for (ClientAddress clientAddress : clientsCacheMap.keySet()) {
+
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Ошибка при отправке обновления клиентам", e);
+            }
         }
     }
 
@@ -143,7 +172,7 @@ public class ServerApplication implements IHistoryProvider {
             LabWorkDAO labWorkDAO = new LabWorkDAO(initialState, dbConnector, reinitDB);
             OfferDAO offerDAO = new OfferDAO(dbConnector, reinitDB);
             userService = new UserService(userDAO, dbConnector);
-            labWorkService = new LabWorkService(labWorkDAO, dbConnector);
+            labWorkService = new LabWorkService(labWorkDAO, dbConnector, (l) -> notifyClients(l));
             productService = new ProductService(productDAO, dbConnector);
             offerService = new OfferService(labWorkDAO, productDAO, offerDAO, labWorkService, dbConnector);
         } catch (SQLException | NoSuchAlgorithmException e) {
@@ -151,6 +180,18 @@ public class ServerApplication implements IHistoryProvider {
             e.printStackTrace();
             logger.error("Программа завершается");
             System.exit(1);
+        }
+    }
+
+    private void notifyClients(List<LabWorkWithKey> labWorkWithKeys) {
+        ConcurrentMap<ClientAddress, ClientAddress> clientsCacheMap = clientsCache.asMap();
+        for (ClientAddress clientAddress : clientsCacheMap.keySet()) {
+            CompletableFuture
+                    .runAsync(
+                            () -> {
+                                CommandResponse response = new CommandResponse("", labWorkWithKeys);
+                                serverRespSender.sendMessageToClient(response, clientAddress.getClientIp(), clientAddress.getClientPort());
+                            });
         }
     }
 

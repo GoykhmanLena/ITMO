@@ -35,7 +35,7 @@ public class ServerResponseSender{
 
             DatagramPacket responsePacket = new DatagramPacket(chunksCountWithCRCSerialized, chunksCountWithCRCSerialized.length, clientIp, clientPort);
             socket.send(responsePacket);
-            logger.debug("Отправлено количество чанков и чексумма: " + chunksCountWithCRC);
+            logger.info("Отправлено количество чанков и чексумма: " + chunksCountWithCRC + " clientIp = " + clientIp + " clientPort = " + clientPort);
             int i = 0;
             for (byte[] responseDataChunk : chunks) {
                 responsePacket = new DatagramPacket(responseDataChunk, responseDataChunk.length, clientIp, clientPort);

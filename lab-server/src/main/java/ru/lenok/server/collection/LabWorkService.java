@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Data
@@ -20,12 +21,14 @@ public class LabWorkService {
     private final LabWorkDAO labWorkDAO;
     private final Object monitor;
     private final DataSource ds;
+    Consumer<List<LabWorkWithKey>> clientNotifier;
 
-    public LabWorkService(LabWorkDAO labWorkDAO, DBConnector dbConnector) throws SQLException {
+    public LabWorkService(LabWorkDAO labWorkDAO, DBConnector dbConnector, Consumer<List<LabWorkWithKey>> clientNotifier) throws SQLException {
         this.labWorkDAO = labWorkDAO;
         ds = dbConnector.getDatasource();
         this.memoryStorage = new MemoryStorage(new Hashtable<>(labWorkDAO.selectAll()));
         monitor = memoryStorage.getMonitor();
+        this.clientNotifier = clientNotifier;
     }
 
     public String getMapAsString() {
@@ -51,6 +54,7 @@ public class LabWorkService {
             Long elemId = labWorkDAO.insert(key, lab);
             lab.setId(elemId);
             memoryStorage.put(key, lab);
+            clientNotifier.accept(getLabWorkList());
             return "";
         }
     }
@@ -59,6 +63,7 @@ public class LabWorkService {
         synchronized (monitor) {
             labWorkDAO.delete(key);
             memoryStorage.remove(key);
+           // clientNotifier.accept(getLabWorkList());
         }
     }
 
@@ -72,6 +77,7 @@ public class LabWorkService {
         synchronized (monitor) {
             labWorkDAO.deleteForUser(ownerId);
             memoryStorage.deleteForUser(ownerId);
+            clientNotifier.accept(getLabWorkList());
         }
     }
 

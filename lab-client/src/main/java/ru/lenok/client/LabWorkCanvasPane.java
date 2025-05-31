@@ -5,6 +5,7 @@ import javafx.animation.TranslateTransition;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -94,6 +95,10 @@ public class LabWorkCanvasPane extends Pane {
 
         getChildren().add(group);
         visualized.put(lw, group);
+
+        // Tooltip с информацией
+        Tooltip tooltip = new Tooltip(buildTooltipText(lw));
+        Tooltip.install(group, tooltip);
 
         double[] velocity = {(rand.nextDouble() * 200 - 100) * 10, (rand.nextDouble() * 200 - 100) * 10};
         long startTime = System.currentTimeMillis();
@@ -195,5 +200,17 @@ public class LabWorkCanvasPane extends Pane {
     private Color getColorForOwner(Long ownerId) {
         return ownerColorMap.computeIfAbsent(ownerId, id ->
                 Color.hsb(rand.nextDouble() * 360, 0.7, 0.9));
+    }
+
+    private String buildTooltipText(LabWork lw) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id = ").append(lw.getId()).append("\n");
+        sb.append("name = ").append(lw.getName()).append("\n");
+        sb.append("coordinates = ").append(lw.getCoordinates()).append("\n");
+        sb.append("creationDate = ").append(lw.getCreationDate()).append("\n");
+        sb.append("minimalPoint = ").append(lw.getMinimalPoint()).append("\n");
+        sb.append("difficulty = ").append(lw.getDifficulty()).append("\n");
+        sb.append("discipline = ").append(lw.getDiscipline()).append("\n");
+        return sb.toString();
     }
 }

@@ -12,8 +12,7 @@ import ru.lenok.common.auth.User;
 import ru.lenok.common.util.SerializationUtils;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.ArrayList;
@@ -32,14 +31,20 @@ public class ClientConnector {
     private final int port;
     private static final int RETRY_COUNT = 10;
     private static final int WAIT_TIMEOUT = 1000 * 10;
+    private DatagramSocket socket;
+
     InetSocketAddress serverAddress;
 
-    public ClientConnector(InetAddress ip, int port) {
+    public ClientConnector(InetAddress ip, int port) throws IOException {
         serverAddress = new InetSocketAddress(ip, port);
         this.ip = ip;
         this.port = port;
+        this.socket = new DatagramSocket(0);
+        logger.info("Клиент слушает оповещения от сервера на порту " + port);
     }
-
+    public int getServerNotificationPort(){
+        return socket.getLocalPort();
+    }
     /*  private Object sendDataOld(Object obj) throws IOException {
         int retryCount = RETRY_COUNT;
         while (retryCount > 0) {
@@ -71,12 +76,14 @@ public class ClientConnector {
         return null;
     }
 */
+
     private Object sendData(Object obj) {
         int retryCount = RETRY_COUNT;
         while (retryCount > 0) {
             retryCount--;
             try (DatagramChannel clientChannel = DatagramChannel.open()) {
                 clientChannel.configureBlocking(false);
+                //clientChannel.bind(clientAddress);
 
                 byte[] data = INSTANCE.serialize(obj);
                 ByteBuffer buffer = ByteBuffer.wrap(data);
@@ -154,7 +161,7 @@ public class ClientConnector {
     }
 
     public Map<String, CommandBehavior> sendHello(boolean isRegister, User user) throws Exception {
-        LoginRequest loginRequest = new LoginRequest(user, isRegister);
+        LoginRequest loginRequest = new LoginRequest(user, isRegister, getServerNotificationPort());
         Object response = sendData(loginRequest);
         if (response instanceof LoginResponse) {
             LoginResponse loginResponse = (LoginResponse) response;
