@@ -9,7 +9,6 @@ import javafx.stage.Stage;
 
 public class LoginForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
-    private final Client client = Client.getINSTANCE();
     private final String host;
     private final int port;
 
