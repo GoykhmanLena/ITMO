@@ -20,7 +20,7 @@ public class AcceptOfferCommand extends AbstractCommand {
     private CommandResponse execute(String argument1, Long userId) throws SQLException {
         long offerId = Long.parseLong(argument1);
         offerService.acceptOffer(offerId, userId);
-        return new CommandResponse("");
+        return new CommandResponse("", null);
     }
 
     @Override

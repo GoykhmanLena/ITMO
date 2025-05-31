@@ -18,7 +18,7 @@ public class HistoryCommand extends AbstractCommand {
 
     private CommandResponse execute(Long clientID) {
         String lastNCommands = historyProvider.getHistoryByClientID(clientID).getLastNCommands(15);
-        return new CommandResponse("История клиента с ID: " + clientID + "\n" + lastNCommands);
+        return new CommandResponse("История клиента с ID: " + clientID + "\n" + lastNCommands, null);
     }
 
     @Override

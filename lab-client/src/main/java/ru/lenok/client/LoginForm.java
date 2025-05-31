@@ -6,15 +6,19 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import ru.lenok.common.CommandRequest;
+import ru.lenok.common.CommandResponse;
+import ru.lenok.common.CommandWithArgument;
+import ru.lenok.common.auth.User;
+import ru.lenok.common.commands.CommandBehavior;
+import ru.lenok.common.models.LabWork;
+
+import java.util.Map;
 
 public class LoginForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
-    private final String host;
-    private final int port;
-
-    public LoginForm(String host, int port) {
-        this.host = host;
-        this.port = port;
+    private final ClientService clientService = ClientService.getINSTANCE();
+    public LoginForm() {
     }
 
     public void start(Stage stage) {
@@ -40,9 +44,14 @@ public class LoginForm {
                 errorLabel.setText(languageManager.get("error.empty_fields"));
             } else {
                 try {
-
-                    client.startClient(host, port, loginField.getText(), passwordField.getText(), registerBox.isSelected());
-                    // new MainForm().start(stage);
+                    User user = new User(loginField.getText(), passwordField.getText());
+                    Map<String, CommandBehavior> commandDefinitions = clientService.getConnector().sendHello(registerBox.isSelected(), user);
+                    clientService.setCommandDefinitions(commandDefinitions);
+                    CommandBehavior show = commandDefinitions.get("show");
+                    CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user);
+                    CommandResponse commandResponse = clientService.getConnector().sendCommand(showRequest);
+                    Map<String, LabWork> labWorkMap = (Map<String, LabWork>) commandResponse.getOutputObject();
+                    new MainForm(labWorkMap).start(stage);
                 } catch (Exception ex) {
                     errorLabel.setText(ex.getMessage());
                 }

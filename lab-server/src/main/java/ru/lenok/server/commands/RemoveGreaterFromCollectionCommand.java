@@ -21,7 +21,7 @@ public class RemoveGreaterFromCollectionCommand extends AbstractCommand {
 
     private CommandResponse execute(LabWork element, long userId) throws SQLException {
         labWorkService.removeGreater(element, userId);
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

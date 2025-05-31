@@ -17,7 +17,7 @@ public class ExecuteScriptCommand extends AbstractCommand {
     }
 
     private CommandResponse execute() throws IOException {
-        return new CommandResponse("execute_script добавлен в историю");
+        return new CommandResponse("execute_script добавлен в историю", null);
     }
 
     @Override

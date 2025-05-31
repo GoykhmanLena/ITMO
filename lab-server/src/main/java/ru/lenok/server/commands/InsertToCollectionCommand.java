@@ -24,7 +24,7 @@ public class InsertToCollectionCommand extends AbstractCommand {
 
     private CommandResponse execute(String key, LabWork element) throws SQLException {
         String warning = labWorkService.put(key, element);
-        return new CommandResponse (warning == null ? EMPTY_RESULT : warning);
+        return new CommandResponse (warning == null ? EMPTY_RESULT : warning, null);
     }
 
     @Override

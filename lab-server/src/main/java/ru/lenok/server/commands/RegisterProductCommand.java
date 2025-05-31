@@ -19,7 +19,7 @@ public class RegisterProductCommand extends AbstractCommand {
 
     private CommandResponse execute(Long ownerId, String productName) throws SQLException {
         productService.registerProduct(productName, ownerId);
-        return new CommandResponse("Продукт успешно добавлен: " + productName);
+        return new CommandResponse("Продукт успешно добавлен: " + productName, null);
     }
 
     @Override

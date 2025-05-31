@@ -19,7 +19,7 @@ public class FilterStartsWithNameCommand extends AbstractCommand {
     }
 
     private CommandResponse execute(String arg) {
-        return new CommandResponse(labWorkService.filterWithName(arg));
+        return new CommandResponse(labWorkService.filterWithName(arg), null);
     }
 
     @Override

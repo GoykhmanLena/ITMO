@@ -21,7 +21,7 @@ public class MakeOfferCommand extends AbstractCommand {
         long labWorkId = Long.parseLong(labWorkIdStr);
         long productId = Long.parseLong(productIdStr);
         offerService.createOffer(labWorkId, productId, userId);
-        return new CommandResponse("Предложение добалено успешно");
+        return new CommandResponse("Предложение добалено успешно", null);
     }
 
     @Override

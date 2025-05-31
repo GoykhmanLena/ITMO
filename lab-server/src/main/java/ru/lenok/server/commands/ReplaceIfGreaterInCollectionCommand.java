@@ -22,7 +22,7 @@ public class ReplaceIfGreaterInCollectionCommand extends AbstractCommand {
 
     private CommandResponse execute(String key, LabWork element) throws SQLException {
         labWorkService.replaceIfGreater(key, element);
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class RemoveByKeyFromCollectionCommand extends AbstractCommand {
 
     private CommandResponse execute(String key) throws SQLException {
         labWorkService.remove(key);
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

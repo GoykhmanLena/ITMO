@@ -3,10 +3,7 @@ package ru.lenok.server.collection;
 import lombok.Data;
 import ru.lenok.common.models.LabWork;
 
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //@Data
@@ -50,6 +47,9 @@ public class MemoryStorage {
     }
     public String getCollectionAsString(){
         return sortMapAndStringify(this.map);
+    }
+    public Map<String, LabWork> getMapSafe(){
+        return new HashMap<>(map);
     }
 
     public String sortMapAndStringify(Map<String, LabWork> filteredMap) {

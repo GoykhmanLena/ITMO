@@ -3,13 +3,10 @@ package ru.lenok.server.commands;
 import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.Product;
-import ru.lenok.common.auth.LoginResponse;
 import ru.lenok.common.commands.AbstractCommand;
-import ru.lenok.server.collection.LabWorkService;
 import ru.lenok.server.services.ProductService;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +25,8 @@ public class ShowProductsCommand extends AbstractCommand {
         return new CommandResponse(
                 products.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining("\n"))
-        );
+                .collect(Collectors.joining("\n")),
+                null);
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import static ru.lenok.server.commands.CommandName.clear;
-import static ru.lenok.server.commands.CommandName.show;
 
 
 public class ClearCollectionCommand extends AbstractCommand {
@@ -22,7 +21,7 @@ public class ClearCollectionCommand extends AbstractCommand {
 
     private CommandResponse execute(long ownerId) throws SQLException {
         labWorkService.clearCollection(ownerId);
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

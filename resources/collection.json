@@ -90,10 +90,10 @@
     "name": "Перевод между СС",
     "coordinates": {
       "x": 789.0,
-      "y": 5678.0
+      "y": 54.0
     },
     "creationDate": "2025-04-06T15:10:04.5985935",
-    "minimalPoint": 5678.0,
+    "minimalPoint": 56.0,
     "description": "надо много много чиселок переводить",
     "difficulty": "VERY_EASY",
     "discipline": {

@@ -19,7 +19,10 @@ public class UserController {
             User userFromDb = userService.register(user);
             return new LoginResponse(null, clientCommandDefinitions, userFromDb.getId());
         } catch (PSQLException e){
-            return new LoginResponse(new IllegalArgumentException("Пользователь с таким логином уже существует, выберите другой"), null, -1);
+            if (e.getSQLState().equals("23505")) {
+                return new LoginResponse(new IllegalArgumentException("Пользователь с таким логином уже существует, выберите другой"), null, -1);
+            }
+            return new LoginResponse(e, null, -1);
         } catch (Exception e){
             return new LoginResponse(e, null, -1);
         }

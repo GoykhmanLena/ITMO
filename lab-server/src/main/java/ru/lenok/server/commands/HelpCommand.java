@@ -22,7 +22,7 @@ public class HelpCommand extends AbstractCommand {
         String result = commandRegistry.getClientCommandDefinitions().entrySet().stream()
                 .map(entry -> commandRegistry.getCommandDescription(entry.getKey()))
                 .collect(Collectors.joining("\n"));
-        return new CommandResponse(result);
+        return new CommandResponse(result, null);
     }
 
     @Override

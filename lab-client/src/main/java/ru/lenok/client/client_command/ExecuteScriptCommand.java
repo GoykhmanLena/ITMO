@@ -43,7 +43,7 @@ public class ExecuteScriptCommand extends AbstractCommand {
             inputProcessor.exitContext();
             logger.info("-------------------- Конец выполнения файла: " + file.getCanonicalPath() + " ---------------------------------------------------------------------");
         }
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

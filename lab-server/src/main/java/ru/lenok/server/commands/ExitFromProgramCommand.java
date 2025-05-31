@@ -14,7 +14,7 @@ public class ExitFromProgramCommand extends AbstractCommand {
     }
 
     private CommandResponse execute() {
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

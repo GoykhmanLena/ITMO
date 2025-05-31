@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class LabWorkService {
@@ -25,9 +26,15 @@ public class LabWorkService {
         monitor = memoryStorage.getMonitor();
     }
 
-    public String getWholeMap() {
+    public String getMapAsString() {
         synchronized (monitor) {
             return memoryStorage.getCollectionAsString();
+        }
+    }
+
+    public Map<String, LabWork> getMap() {
+        synchronized (monitor) {
+            return memoryStorage.getMapSafe();
         }
     }
 

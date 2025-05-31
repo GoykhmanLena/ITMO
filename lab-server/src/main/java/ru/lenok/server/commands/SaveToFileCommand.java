@@ -5,8 +5,6 @@ import ru.lenok.common.CommandResponse;
 import ru.lenok.common.commands.AbstractCommand;
 import ru.lenok.server.collection.LabWorkService;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import static ru.lenok.server.commands.CommandName.save;
@@ -24,7 +22,7 @@ public class SaveToFileCommand extends AbstractCommand {
  //TODO       try (BufferedWriter writer = new BufferedWriter(new FileWriter(labWorkService.getFileName()))) {
  //           writer.write(json);
  //       }
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override

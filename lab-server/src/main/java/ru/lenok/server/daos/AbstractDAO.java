@@ -15,7 +15,7 @@ public class AbstractDAO {
     }
 
     protected void setSequenceValue(String sequenceName, long newValue) throws SQLException {
-        String sql = "SELECT setval('" + sequenceName + "', ?, false)";
+        String sql = "SELECT setval('" + sequenceName + "', ?, true)";
         try (Connection connection = ds.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setLong(1, newValue);
@@ -31,7 +31,7 @@ public class AbstractDAO {
                  ResultSet rs = stmt.executeQuery(query)) {
                 if (rs.next()) {
                     long lastValue = rs.getLong("last_value");
-                    logger.debug(sequenceName + " value: " + lastValue);
+                    logger.info(sequenceName + " value: " + lastValue);
                 }
             }
         }

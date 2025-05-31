@@ -25,7 +25,7 @@ public class ShowOutgoingOffersCommand extends AbstractCommand {
         return new CommandResponse(
                 outgoingOffers.stream()
                 .map(Object::toString)
-                .collect(Collectors.joining("\n")));
+                .collect(Collectors.joining("\n")), null);
     }
 
     @Override

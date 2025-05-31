@@ -3,7 +3,10 @@ package ru.lenok.server.commands;
 import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.commands.AbstractCommand;
+import ru.lenok.common.models.LabWork;
 import ru.lenok.server.collection.LabWorkService;
+
+import java.util.Map;
 
 import static ru.lenok.server.commands.CommandName.show;
 
@@ -16,8 +19,9 @@ public class ShowCollectionCommand extends AbstractCommand {
     }
 
     private CommandResponse execute(){
-        String answer = labWorkService.getWholeMap();
-        return new CommandResponse(answer.length() == 0 ? "ПУСТАЯ КОЛЛЕКЦИЯ" : answer);
+        String answer = labWorkService.getMapAsString();
+        Map<String, LabWork> map = labWorkService.getMap();
+        return new CommandResponse(answer.length() == 0 ? "ПУСТАЯ КОЛЛЕКЦИЯ" : answer, map);
     }
 
     @Override

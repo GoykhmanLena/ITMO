@@ -18,7 +18,7 @@ public class FilterContainsDescriptionCommand extends AbstractCommand {
     }
 
     private CommandResponse execute(String arg) {
-        return new CommandResponse(labWorkService.filterWithDescription(arg));
+        return new CommandResponse(labWorkService.filterWithDescription(arg), null);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class ExitFromProgramCommand extends AbstractCommand {
     public CommandResponse execute() {
         logger.info("Завершаю программу клиента");
         System.exit(0);
-        return new CommandResponse(EMPTY_RESULT);
+        return new CommandResponse(EMPTY_RESULT, null);
     }
 
     @Override
