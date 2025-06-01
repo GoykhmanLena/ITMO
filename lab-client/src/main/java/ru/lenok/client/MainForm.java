@@ -3,6 +3,7 @@ package ru.lenok.client;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -21,6 +22,7 @@ public class MainForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
     private final ClientService clientService = ClientService.getINSTANCE();
     private final ObservableList<LabWorkWithKey> labWorks = FXCollections.observableArrayList();
+    private final FilteredList<LabWorkWithKey> filteredLabWorks = new FilteredList<>(labWorks, s -> true);
     private Stage stage;
 
     public MainForm(List<LabWorkWithKey> labWorkList, Stage stage) {
@@ -67,7 +69,7 @@ public class MainForm {
         leftPane.setPadding(new Insets(10));
         leftPane.setVgrow(splitPane, Priority.ALWAYS);
 
-        LabWorkTableView tableView = new LabWorkTableView(labWorks);
+        LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks, filteredLabWorks::setPredicate);
         Button addButton = new Button("Add");
         leftPane.getChildren().addAll(tableView, addButton);
         VBox.setVgrow(tableView, Priority.ALWAYS);
@@ -79,7 +81,6 @@ public class MainForm {
         splitPane.getItems().addAll(leftPane, rightPane);
         root.setCenter(splitPane);
 
-        // Синхронизация
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) {
                 labCanvas.highlight(selected);
@@ -92,7 +93,7 @@ public class MainForm {
         });
 
         Scene scene = new Scene(root);
-        stage.setScene(scene); // Обязательно — новая сцена
+        stage.setScene(scene);
         stage.setTitle("LabWork Manager");
         stage.show();
     }

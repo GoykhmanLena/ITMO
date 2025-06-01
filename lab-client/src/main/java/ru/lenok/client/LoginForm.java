@@ -15,17 +15,22 @@ import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class LoginForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
     private final ClientService clientService = ClientService.getINSTANCE();
+
     public LoginForm() {
     }
 
     public void start(Stage stage) {
-        TextField loginField = new TextField();
+        TextField loginField = new TextField(UUID.randomUUID().toString().substring(0, 8));
         PasswordField passwordField = new PasswordField();
+        passwordField.setText(UUID.randomUUID().toString().substring(0, 8));
         CheckBox registerBox = new CheckBox();
+        registerBox.setSelected(true);
+
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");
 
@@ -53,7 +58,10 @@ public class LoginForm {
                     CommandResponse commandResponse = clientService.getConnector().sendCommand(showRequest);
                     List<LabWorkWithKey> labWorkList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
                     clientService.setUser(user);
-                    new MainForm(labWorkList, stage).start();
+                    stage.close(); // закрыть LoginForm
+                    Stage mainStage = new Stage(); // создаём новое окно для MainForm
+                    mainStage.setMaximized(true);
+                    new MainForm(labWorkList, mainStage).start();
                 } catch (Exception ex) {
                     errorLabel.setText(ex.getMessage());
                 }
@@ -97,14 +105,16 @@ public class LoginForm {
         grid.add(buttonBox, 0, 4, 2, 1);
 
         loginButton.setText(languageManager.get("button.login"));
+        loginButton.setDefaultButton(true);
 
         BorderPane root = new BorderPane();
         root.setTop(topLangBox);
         root.setCenter(grid);
 
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 400, Region.USE_COMPUTED_SIZE);
         stage.setScene(scene);
         stage.setTitle(languageManager.get("title.login"));
+        stage.sizeToScene(); // корректирует высоту под содержимое
         stage.show();
     }
 }

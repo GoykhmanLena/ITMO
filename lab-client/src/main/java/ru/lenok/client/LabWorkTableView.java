@@ -1,85 +1,98 @@
 package ru.lenok.client;
 
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
-    public LabWorkTableView(ObservableList<LabWorkWithKey> data) {
+    public LabWorkTableView(ObservableList<LabWorkWithKey> data, Consumer<Predicate<LabWorkWithKey>> setFilter) {
+        getColumns().clear();
         setItems(data);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
 
-        // Колонка ключа (например, "pr_lab2")
-        TableColumn<LabWorkWithKey, String> keyCol = new TableColumn<>("Key");
-        keyCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getKey()));
-
-        TableColumn<LabWorkWithKey, Number> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(c -> new SimpleLongProperty(c.getValue().getId()));
-
-        TableColumn<LabWorkWithKey, String> nameCol = new TableColumn<>("Name");
-        nameCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getName()));
-
-        TableColumn<LabWorkWithKey, String> coordinatesCol = new TableColumn<>("Coordinates");
-        coordinatesCol.setCellValueFactory(c -> {
+        addFilterableColumn("Key", c -> c.getValue().getKey(), setFilter);
+        addFilterableColumn("ID", c -> String.valueOf(c.getValue().getId()), setFilter);
+        addFilterableColumn("Name", c -> c.getValue().getName(), setFilter);
+        addFilterableColumn("Coordinates", c -> {
             var coords = c.getValue().getCoordinates();
-            return new SimpleStringProperty("(" + coords.getX() + ", " + coords.getY() + ")");
-        });
-
-        TableColumn<LabWorkWithKey, String> creationDateCol = new TableColumn<>("Created");
-        creationDateCol.setCellValueFactory(c -> {
-            var date = c.getValue().getCreationDate();
-            return new SimpleStringProperty(date.format(DateTimeFormatter.ISO_LOCAL_DATE));
-        });
-
-        TableColumn<LabWorkWithKey, Number> minPointCol = new TableColumn<>("Minimal Point");
-        minPointCol.setCellValueFactory(c -> new SimpleDoubleProperty(c.getValue().getMinimalPoint()));
-
-        TableColumn<LabWorkWithKey, String> descriptionCol = new TableColumn<>("Description");
-        descriptionCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDescription()));
-
-        TableColumn<LabWorkWithKey, String> difficultyCol = new TableColumn<>("Difficulty");
-        difficultyCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getDifficulty().name()));
-
-        TableColumn<LabWorkWithKey, String> disciplineCol = new TableColumn<>("Discipline");
-        disciplineCol.setCellValueFactory(c -> {
+            return "(" + coords.getX() + ", " + coords.getY() + ")";
+        }, setFilter);
+        addFilterableColumn("Created", c -> c.getValue().getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE), setFilter);
+        addFilterableColumn("Minimal Point", c -> String.valueOf(c.getValue().getMinimalPoint()), setFilter);
+        addFilterableColumn("Description", c -> c.getValue().getDescription(), setFilter);
+        addFilterableColumn("Difficulty", c -> c.getValue().getDifficulty().name(), setFilter);
+        addFilterableColumn("Discipline", c -> {
             var d = c.getValue().getDiscipline();
-            return new SimpleStringProperty(d.getName() + " (" + d.getPracticeHours() + " ч)");
-        });
+            return d.getName() + " (" + d.getPracticeHours() + " ч)";
+        }, setFilter);
+        addFilterableColumn("Owner ID", c -> String.valueOf(c.getValue().getOwnerId()), setFilter);
 
-        TableColumn<LabWorkWithKey, Number> ownerCol = new TableColumn<>("Owner ID");
-        ownerCol.setCellValueFactory(c -> new SimpleLongProperty(c.getValue().getOwnerId()));
-
-        getColumns().addAll(
-                keyCol,
-                nameCol,
-                coordinatesCol,
-                disciplineCol,
-                idCol,
-                ownerCol,
-                minPointCol,
-                creationDateCol,
-                difficultyCol,
-                descriptionCol
-        );
-
-        // Обработчик двойного клика
         setRowFactory(tv -> {
             TableRow<LabWorkWithKey> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (!row.isEmpty() && event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                     LabWorkWithKey selected = row.getItem();
-                    // TODO: Открытие формы редактирования
-                   // new EditDialog(selected, getItems()).showAndWait();
+                    // TODO: Open Edit dialog
                 }
             });
             return row;
         });
+    }
+
+    private void addFilterableColumn(String title,
+                                     javafx.util.Callback<TableColumn.CellDataFeatures<LabWorkWithKey, String>, String> extractor,
+                                     Consumer<Predicate<LabWorkWithKey>> setFilter) {
+        TableColumn<LabWorkWithKey, String> column = new TableColumn<>();
+        column.setCellValueFactory(cell -> new SimpleStringProperty(extractor.call(cell)));
+
+        // Меню: фильтровать
+        MenuItem filterItem = new MenuItem("Фильтровать...");
+        filterItem.setOnAction(e -> showFilterPopup(column.getGraphic(), filterText ->
+                setFilter.accept(item -> extractor.call(new TableColumn.CellDataFeatures<>(null, column, item))
+                        .toLowerCase().contains(filterText.toLowerCase()))
+        ));
+
+        // Меню: убрать все фильтры
+        MenuItem clearFilterItem = new MenuItem("Убрать все фильтры");
+        clearFilterItem.setOnAction(e -> setFilter.accept(item -> true));
+
+        ContextMenu contextMenu = new ContextMenu(filterItem, clearFilterItem);
+
+        Label label = new Label(title);
+        label.setContextMenu(contextMenu);
+        label.setStyle("-fx-font-weight: bold; -fx-padding: 4px;");
+        column.setGraphic(label);
+
+        getColumns().add(column);
+    }
+
+    private void showFilterPopup(Node owner, Consumer<String> onFilterEntered) {
+        TextField filterField = new TextField();
+        filterField.setPromptText("Введите фильтр...");
+        VBox box = new VBox(filterField);
+        box.setStyle("-fx-background-color: white; -fx-border-color: gray; -fx-padding: 5;");
+        Popup popup = new Popup();
+        popup.getContent().add(box);
+        popup.setAutoHide(true);
+
+        var bounds = owner.localToScreen(owner.getBoundsInLocal());
+        popup.show(owner, bounds.getMinX(), bounds.getMaxY());
+
+        filterField.setOnAction(e -> {
+            popup.hide();
+            onFilterEntered.accept(filterField.getText());
+        });
+
+        filterField.requestFocus();
     }
 }
