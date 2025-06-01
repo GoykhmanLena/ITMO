@@ -46,7 +46,8 @@ public class ServerResponseSender{
                 } catch (InterruptedException e) {
                     //ignored
                 }
-                logger.debug("Отправлен чанк " + i + " из " + chunkCount);
+                logger.info("Отправлен чанк " + i + " из " + chunkCount);
+                logger.info("размер чанка " + responseDataChunk.length);
             }
             if (chunkCount == 1) {
                 logger.debug("Отправлены данные: " + response);

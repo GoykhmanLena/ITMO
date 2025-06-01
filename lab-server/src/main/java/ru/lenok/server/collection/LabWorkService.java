@@ -63,7 +63,7 @@ public class LabWorkService {
         synchronized (monitor) {
             labWorkDAO.delete(key);
             memoryStorage.remove(key);
-           // clientNotifier.accept(getLabWorkList());
+            clientNotifier.accept(getLabWorkList());
         }
     }
 
@@ -107,6 +107,7 @@ public class LabWorkService {
             List<String> keysForRemoving = memoryStorage.keysOfGreater(elem, userId);
             labWorkDAO.deleteByKeys(keysForRemoving);
             keysForRemoving.forEach(key -> memoryStorage.remove(key));
+            clientNotifier.accept(getLabWorkList());
         }
     }
 
@@ -119,6 +120,7 @@ public class LabWorkService {
                     newLabWork.setId(memoryStorage.getId(key));
                     labWorkDAO.updateById(key, newLabWork, connection);
                     memoryStorage.put(key, newLabWork);
+                    clientNotifier.accept(getLabWorkList());
                 }
             }
         }
@@ -137,6 +139,7 @@ public class LabWorkService {
             labWork.setId(id);
             labWorkDAO.updateById(key, labWork, connection);
             memoryStorage.put(key, labWork);
+            clientNotifier.accept(getLabWorkList());
         }
     }
 

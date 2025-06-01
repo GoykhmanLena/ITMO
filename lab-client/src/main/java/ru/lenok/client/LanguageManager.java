@@ -44,7 +44,8 @@ public class LanguageManager {
                 "label.password", "Password",
                 "label.register", "Register",
                 "button.login", "Login",
-                "error.empty_fields", "Please fill in all fields"
+                "error.empty_fields", "Please fill in all fields",
+                "user_label", "User"
         ));
     }
 

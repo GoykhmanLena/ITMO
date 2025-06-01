@@ -16,4 +16,5 @@ public class CommandRequest implements Serializable {
     private CommandWithArgument commandWithArgument;
     private LabWork element;
     private User user;
+    private int serverNotificationPort;
 }

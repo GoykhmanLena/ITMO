@@ -8,6 +8,7 @@ import ru.lenok.common.util.SerializationUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.Arrays;
 import java.util.concurrent.ForkJoinPool;
 
 @Data
@@ -37,8 +38,8 @@ public class ServerConnectionListener{
                 logger.info("Жду сообщения");
                 socket.receive(packetFromClient);
             }
-
-            Object dataFromClient = SerializationUtils.INSTANCE.deserialize(packetFromClient.getData());
+            byte[] actualData = Arrays.copyOfRange(buffer, 0, packetFromClient.getLength());
+            Object dataFromClient = SerializationUtils.INSTANCE.deserialize(actualData);
             logger.info("Получено: " + dataFromClient);
 
             IncomingMessage incomingMessage = new IncomingMessage(dataFromClient, packetFromClient.getAddress(), packetFromClient.getPort());

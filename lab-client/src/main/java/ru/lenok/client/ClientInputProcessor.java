@@ -89,7 +89,7 @@ public class ClientInputProcessor {
                 throw new IllegalArgumentException("Вы передали элемент на команду, которой он не нужен: " + commandWithArgument);
             }
         }
-        CommandRequest commandRequest = new CommandRequest(commandWithArgument, labWorkItemAssembler == null ? null : labWorkItemAssembler.getLabWorkElement(), user);
+        CommandRequest commandRequest = new CommandRequest(commandWithArgument, labWorkItemAssembler == null ? null : labWorkItemAssembler.getLabWorkElement(), user, -1);
         if (EXECUTE_SCRIPT_NAME.equals(commandName)) {
             runExecuteScript(commandRequest);
         } else if (EXIT_NAME.equals(commandName)) {

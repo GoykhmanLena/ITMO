@@ -11,7 +11,6 @@ import ru.lenok.common.CommandResponse;
 import ru.lenok.common.CommandWithArgument;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
-import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
@@ -50,10 +49,11 @@ public class LoginForm {
                     Map<String, CommandBehavior> commandDefinitions = clientService.getConnector().sendHello(registerBox.isSelected(), user);
                     clientService.setCommandDefinitions(commandDefinitions);
                     CommandBehavior show = commandDefinitions.get("show");
-                    CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user);
+                    CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user, clientService.getServerNotificationPort());
                     CommandResponse commandResponse = clientService.getConnector().sendCommand(showRequest);
                     List<LabWorkWithKey> labWorkList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
-                    new MainForm(labWorkList).start(stage);
+                    clientService.setUser(user);
+                    new MainForm(labWorkList, stage).start();
                 } catch (Exception ex) {
                     errorLabel.setText(ex.getMessage());
                 }

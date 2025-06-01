@@ -7,19 +7,24 @@ import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.auth.LoginRequest;
 import ru.lenok.common.auth.LoginResponse;
-import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.auth.User;
+import ru.lenok.common.commands.CommandBehavior;
+import ru.lenok.common.models.LabWorkWithKey;
 import ru.lenok.common.util.SerializationUtils;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-import static ru.lenok.client.ClientApplication.CLIENT_ID;
 import static ru.lenok.common.util.SerializationUtils.BUFFER_SIZE;
 import static ru.lenok.common.util.SerializationUtils.INSTANCE;
 
@@ -27,23 +32,22 @@ import static ru.lenok.common.util.SerializationUtils.INSTANCE;
 public class ClientConnector {
     private static final Logger logger = LoggerFactory.getLogger(ClientConnector.class);
     public static final int INTER_WAIT_SLEEP_TIMEOUT = 50;
-    private final InetAddress ip;
-    private final int port;
     private static final int RETRY_COUNT = 10;
     private static final int WAIT_TIMEOUT = 1000 * 10;
-    private DatagramSocket socket;
+    private final DatagramSocket notificationListeningSocket;
 
-    InetSocketAddress serverAddress;
+    private final InetSocketAddress serverAddress;
 
     public ClientConnector(InetAddress ip, int port) throws IOException {
         serverAddress = new InetSocketAddress(ip, port);
-        this.ip = ip;
-        this.port = port;
-        this.socket = new DatagramSocket(0);
+        this.notificationListeningSocket = new DatagramSocket(0);
+        ClientService.getINSTANCE().setServerNotificationPort(getServerNotificationPort());
         logger.info("Клиент слушает оповещения от сервера на порту " + port);
+        new Thread(() -> listenForServerNotifications()).start();
     }
-    public int getServerNotificationPort(){
-        return socket.getLocalPort();
+
+    public int getServerNotificationPort() {
+        return notificationListeningSocket.getLocalPort();
     }
     /*  private Object sendDataOld(Object obj) throws IOException {
         int retryCount = RETRY_COUNT;
@@ -115,18 +119,15 @@ public class ClientConnector {
                             response = INSTANCE.deserializeFromChunks(chunks, chunksCountWithCRC.getCrc());
                             if (expectedChunksSize == 1) {
                                 logger.debug("Ответ от сервера: " + response);
-                            }
-                            else {
+                            } else {
                                 logger.debug("Ответ от сервера: итого получено чанков " + expectedChunksSize);
                             }
                             return response;
-                        }
-                        else {
-                            logger.error("Ожидалось " + expectedChunksSize +  " чанков, а пришло: " + chunks.size());
+                        } else {
+                            logger.error("Ожидалось " + expectedChunksSize + " чанков, а пришло: " + chunks.size());
                             continue;
                         }
-                    }
-                    else {
+                    } else {
                         logger.error("Ожидалось количество чанков, а пришло другое: " + response);
                     }
                     return response;
@@ -165,7 +166,7 @@ public class ClientConnector {
         Object response = sendData(loginRequest);
         if (response instanceof LoginResponse) {
             LoginResponse loginResponse = (LoginResponse) response;
-            if (loginResponse.getError() != null){
+            if (loginResponse.getError() != null) {
                 throw loginResponse.getError();
             }
             return loginResponse.getClientCommandDefinitions();
@@ -181,5 +182,56 @@ public class ClientConnector {
         throw new IllegalArgumentException("Неверный ответ от сервера на команду: " + commandResponse);
     }
 
+    public void listenForServerNotifications() {
+        while (true) {
+            try {
+                byte[] buffer = new byte[SerializationUtils.BUFFER_SIZE];
+                DatagramPacket packetFromClient = new DatagramPacket(buffer, buffer.length);
+
+                logger.info("Жду оповещения от сервера на порту " + getServerNotificationPort());
+                notificationListeningSocket.receive(packetFromClient);
+
+                byte[] actualData = Arrays.copyOfRange(buffer, 0, packetFromClient.getLength());
+                Object serverNotification = SerializationUtils.INSTANCE.deserialize(actualData);
+                long expectedChunksSize;
+                List<byte[]> chunks = new ArrayList<>();
+                if (serverNotification instanceof SerializationUtils.ChunksCountWithCRC) {
+                    SerializationUtils.ChunksCountWithCRC chunksCountWithCRC = (SerializationUtils.ChunksCountWithCRC) serverNotification;
+                    expectedChunksSize = chunksCountWithCRC.getChunksCount();
+                    logger.debug("Ответ от сервера, ожидается количество чанков: " + expectedChunksSize + " crc = " + chunksCountWithCRC.getCrc());
+                    for (int i = 1; i <= expectedChunksSize; i++) {
+                        notificationListeningSocket.receive(packetFromClient);
+                        actualData = Arrays.copyOfRange(buffer, 0, packetFromClient.getLength());
+                        chunks.add(actualData);
+                        logger.debug("Ответ от сервера, получен чанк: " + i);
+                        logger.info("размер чанка " + actualData.length);
+                    }
+                    if (expectedChunksSize == chunks.size()) {
+                        serverNotification = INSTANCE.deserializeFromChunks(chunks, chunksCountWithCRC.getCrc());
+                        if (expectedChunksSize == 1) {
+                            logger.debug("Ответ от сервера: " + serverNotification);
+                        } else {
+                            logger.debug("Ответ от сервера: итого получено чанков " + expectedChunksSize);
+                        }
+                        if (serverNotification instanceof CommandResponse){
+                            CommandResponse commandResponse = (CommandResponse) serverNotification;
+                            List<LabWorkWithKey> labWorkWithKeyList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
+                            Consumer<List<LabWorkWithKey>> serverNotifier = ClientService.getINSTANCE().getNotificationListener();
+                            if (serverNotifier != null) {
+                                serverNotifier.accept(labWorkWithKeyList);
+                            }
+                        }
+                    } else {
+                        logger.error("Ожидалось " + expectedChunksSize + " чанков, а пришло: " + chunks.size());
+                    }
+                } else {
+                    logger.error("Ожидалось количество чанков, а пришло другое: " + serverNotification);
+                }
+
+            } catch (Exception e) {
+                logger.error("Ошибка: " + e);
+            }
+        }
+    }
 
 }

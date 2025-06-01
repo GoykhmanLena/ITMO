@@ -12,11 +12,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
-import java.util.Map;
 
 public class MainForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
@@ -24,12 +22,21 @@ public class MainForm {
     private final ObservableList<LabWorkWithKey> labWorks = FXCollections.observableArrayList();
     private final LabWorkTableView tableView = new LabWorkTableView(labWorks);
     private final LabWorkCanvasPane labCanvas = new LabWorkCanvasPane(labWorks);
+    private Stage stage;
 
-    public MainForm(List<LabWorkWithKey> labWorkList) {
+    public MainForm(List<LabWorkWithKey> labWorkList, Stage stage) {
+        this.stage = stage;
         labWorks.addAll(labWorkList);
+        clientService.registerNotificationListener((l) -> notifyListChanged(l));
     }
 
-    public void start(Stage stage) {
+    public void notifyListChanged(List<LabWorkWithKey> list){
+        labWorks.clear();
+        labWorks.addAll(list);
+        start(); // Обновление всей формы
+    }
+
+    public void start() {
         BorderPane root = new BorderPane();
         root.setPrefSize(1200, 800);
 
@@ -38,14 +45,14 @@ public class MainForm {
         topBar.setAlignment(Pos.TOP_RIGHT);
         topBar.setStyle("-fx-background-color: #f0f0f0");
 
-        Label userLabel = new Label("User: Иван Иванов");
+        Label userLabel = new Label(languageManager.get("user_label") + ": " + clientService.getUser().getUsername());
         ComboBox<String> langBox = new ComboBox<>();
         langBox.getItems().addAll("Русский", "Македонски", "Shqip", "English (NZ)");
         langBox.getSelectionModel().select(languageManager.getCurrentLanguageName());
 
         langBox.setOnAction(e -> {
             languageManager.setLanguage(langBox.getSelectionModel().getSelectedItem());
-            start(stage);
+            start();
         });
 
         Region spacer = new Region();
@@ -70,7 +77,6 @@ public class MainForm {
         splitPane.getItems().addAll(leftPane, rightPane);
         root.setCenter(splitPane);
 
-        // СИНХРОНИЗАЦИЯ ВЫДЕЛЕНИЯ
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) {
                 labCanvas.highlight(selected);
@@ -83,8 +89,8 @@ public class MainForm {
         });
 
         Scene scene = new Scene(root);
+        stage.setScene(scene); // Переназначаем сцену каждый раз
         stage.setTitle("LabWork Manager");
-        stage.setScene(scene);
         stage.show();
     }
 }

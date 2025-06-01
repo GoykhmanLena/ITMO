@@ -1,12 +1,21 @@
 package ru.lenok.client;
 
+import lombok.Data;
+import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
+import ru.lenok.common.models.LabWorkWithKey;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+@Data
 
 public class ClientService {
     private static ClientService INSTANCE = new ClientService();
     private ClientConnector connector;
+    private Consumer<List<LabWorkWithKey>> notificationListener;
+    private int serverNotificationPort;
+    private User user;
 
     public static ClientService getINSTANCE() {
         return INSTANCE;
@@ -31,7 +40,12 @@ public class ClientService {
     private Map<String, CommandBehavior> commandDefinitions;
 
     private ClientService(){
-
+    }
+    public void registerNotificationListener(Consumer<List<LabWorkWithKey>> notificationListener){
+        this.notificationListener = notificationListener;
     }
 
+    public Consumer<List<LabWorkWithKey>> getNotificationListener() {
+        return notificationListener;
+    }
 }
