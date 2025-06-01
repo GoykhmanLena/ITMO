@@ -1,6 +1,9 @@
 package ru.lenok.client;
 
 import lombok.Data;
+import ru.lenok.common.CommandRequest;
+import ru.lenok.common.CommandResponse;
+import ru.lenok.common.CommandWithArgument;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
@@ -47,5 +50,11 @@ public class ClientService {
 
     public Consumer<List<LabWorkWithKey>> getNotificationListener() {
         return notificationListener;
+    }
+
+    public void insertLabWork(LabWorkWithKey labWorkWithKey){
+        CommandBehavior behavior = commandDefinitions.get("insert");
+        CommandRequest showRequest = new CommandRequest(new CommandWithArgument("insert", behavior , labWorkWithKey.getKey(), null), labWorkWithKey, user, getServerNotificationPort());
+        CommandResponse commandResponse = getConnector().sendCommand(showRequest);
     }
 }

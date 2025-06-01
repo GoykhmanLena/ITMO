@@ -14,6 +14,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import ru.lenok.common.CommandRequest;
+import ru.lenok.common.CommandResponse;
+import ru.lenok.common.CommandWithArgument;
+import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
@@ -71,6 +75,15 @@ public class MainForm {
 
         LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks, filteredLabWorks::setPredicate);
         Button addButton = new Button("Add");
+        addButton.setOnAction(e -> {
+            LabWorkForm form = new LabWorkForm(null);
+            form.showAndWait();
+            LabWorkWithKey labWorkWithKey = form.getResult();
+            if (labWorkWithKey != null){
+                clientService.insertLabWork(labWorkWithKey);
+            }
+        });
+
         leftPane.getChildren().addAll(tableView, addButton);
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
