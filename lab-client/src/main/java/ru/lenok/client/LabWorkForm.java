@@ -1,5 +1,6 @@
 package ru.lenok.client;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -19,6 +20,9 @@ public class LabWorkForm extends Stage {
     private LabWorkWithKey result;
     private final VBox errorBox;
     private final DatePicker datePicker;
+    private final ProgressIndicator progressIndicator;
+    private final Button okBtn;
+    private final Button cancelBtn;
 
     public LabWorkForm(LabWorkWithKey existing) {
         setTitle(existing == null ? "Create LabWork" : "Edit LabWork");
@@ -58,7 +62,6 @@ public class LabWorkForm extends Stage {
         datePicker = new DatePicker(existing == null ? LocalDate.now() : existing.getCreationDate().toLocalDate());
         Label dateLabel = new Label("Creation Date:");
         if (existing == null) {
-            // Скрываем поле даты и лейбл при создании
             datePicker.setVisible(false);
             datePicker.setManaged(false);
             dateLabel.setVisible(false);
@@ -93,10 +96,13 @@ public class LabWorkForm extends Stage {
         HBox buttonBox = new HBox(10);
         buttonBox.setPadding(new Insets(10, 0, 0, 0));
         buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-        Button okBtn = new Button("OK");
+        okBtn = new Button("OK");
         okBtn.setDefaultButton(true);
-        Button cancelBtn = new Button("Cancel");
-        buttonBox.getChildren().addAll(okBtn, cancelBtn);
+        cancelBtn = new Button("Cancel");
+        progressIndicator = new ProgressIndicator();
+        progressIndicator.setVisible(false);
+        progressIndicator.setMaxSize(24, 24);
+        buttonBox.getChildren().addAll(progressIndicator, okBtn, cancelBtn);
         grid.add(buttonBox, 0, row, 2, 1);
 
         if (existing != null) {
@@ -104,7 +110,6 @@ public class LabWorkForm extends Stage {
             nameField.setText(existing.getName());
             xField.setText(String.valueOf(existing.getCoordinates().getX()));
             yField.setText(String.valueOf(existing.getCoordinates().getY()));
-            // datePicker уже установлен выше
             minPointField.setText(String.valueOf(existing.getMinimalPoint()));
             descArea.setText(existing.getDescription());
             difficultyBox.setValue(existing.getDifficulty());
@@ -208,42 +213,54 @@ public class LabWorkForm extends Stage {
             return;
         }
 
-        try {
-            LocalDateTime date;
-            if (existing == null) {
-                // При создании берем now()
-                date = LocalDateTime.now();
-            } else {
-                // При редактировании берем из datePicker
-                date = datePicker.getValue().atStartOfDay();
-            }
+        okBtn.setDisable(true);
+        progressIndicator.setVisible(true);
 
-            Long ownerId = ClientService.getINSTANCE().getUser().getId();
+        double finalX = x;
+        float finalY = y;
+        double finalMinPoint = minPoint;
+        long finalHours = hours;
+        new Thread(() -> {
+            try {
+                LocalDateTime date = existing == null
+                        ? LocalDateTime.now()
+                        : datePicker.getValue().atStartOfDay();
 
-            LabWork lw = new LabWork.Builder()
-                    .setName(name)
-                    .setCoordinateX(x)
-                    .setCoordinateY(y)
-                    .setCreationDate(date)
-                    .setMinimalPoint(minPoint)
-                    .setDescription(desc)
-                    .setDifficulty(difficulty)
-                    .setDisciplineName(discName)
-                    .setDisciplinePracticeHours(hours)
-                    .setOwnerId(ownerId)
-                    .build();
+                Long ownerId = ClientService.getINSTANCE().getUser().getId();
 
-            result = new LabWorkWithKey(key, lw);
-            CommandResponse insertResponse = ClientService.getINSTANCE().insertLabWork(result);
-            if (insertResponse.getError() != null) {
-                new Alert(Alert.AlertType.ERROR, "Ошибка: " + insertResponse.getError()).showAndWait();
+                LabWork lw = new LabWork.Builder()
+                        .setName(name)
+                        .setCoordinateX(finalX)
+                        .setCoordinateY(finalY)
+                        .setCreationDate(date)
+                        .setMinimalPoint(finalMinPoint)
+                        .setDescription(desc)
+                        .setDifficulty(difficulty)
+                        .setDisciplineName(discName)
+                        .setDisciplinePracticeHours(finalHours)
+                        .setOwnerId(ownerId)
+                        .build();
+
+                result = new LabWorkWithKey(key, lw);
+                CommandResponse insertResponse = ClientService.getINSTANCE().insertLabWork(result);
+
+                Platform.runLater(() -> {
+                    if (insertResponse.getError() != null) {
+                        new Alert(Alert.AlertType.ERROR, "Ошибка: " + insertResponse.getError()).showAndWait();
+                        okBtn.setDisable(false);
+                        progressIndicator.setVisible(false);
+                    } else {
+                        close();
+                    }
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    new Alert(Alert.AlertType.ERROR, "Ошибка: " + ex.getMessage()).showAndWait();
+                    okBtn.setDisable(false);
+                    progressIndicator.setVisible(false);
+                });
             }
-            else {
-                close();
-            }
-        } catch (Exception ex) {
-            new Alert(Alert.AlertType.ERROR, "Ошибка: " + ex.getMessage()).showAndWait();
-        }
+        }).start();
     }
 
     private void addError(Control field, String msg) {
