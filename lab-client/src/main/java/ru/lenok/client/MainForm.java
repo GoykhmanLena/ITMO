@@ -44,9 +44,9 @@ public class MainForm {
     }
 
     public void start() {
+        stage.setTitle(languageManager.get("title.main"));
         if (!initialized) {
             stage.setScene(scene);
-            stage.setTitle("LabWork Manager");
             stage.setMaximized(true);
             stage.show();
             initialized = true;
@@ -87,13 +87,13 @@ public class MainForm {
 
         LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks);
 
-        Button addButton = new Button("Add");
+        Button addButton = new Button(languageManager.get("button.create"));
         addButton.setOnAction(e -> {
             LabWorkForm form = new LabWorkForm(null);
             form.showAndWait();
         });
 
-        Button editButton = new Button("Edit");
+        Button editButton = new Button(languageManager.get("button.edit"));
         editButton.setOnAction(e -> {
             LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -102,7 +102,7 @@ public class MainForm {
             }
         });
 
-        Button deleteButton = new Button("Delete");
+        Button deleteButton = new Button(languageManager.get("button.delete"));
         deleteButton.setOnAction(e -> {
             LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -113,7 +113,7 @@ public class MainForm {
             }
         });
 
-        Button clearButton = new Button("Clear");
+        Button clearButton = new Button(languageManager.get("button.clear"));
         clearButton.setOnAction(e -> {
             Exception error = clientService.clearLabWorks();
             if (error != null) {

@@ -9,7 +9,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import ru.lenok.common.models.LabWorkWithKey;
@@ -20,6 +19,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class LabWorkTableView extends TableView<LabWorkWithKey> {
+    private final LanguageManager languageManager = LanguageManager.getInstance();
     private final FilteredList<LabWorkWithKey> filteredData;
     private final SortedList<LabWorkWithKey> sortedData;
 
@@ -35,34 +35,36 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().clear();
+/*
+        Map.entry("label.key", "Ключ"),
+                Map.entry("label.name", "Имя"),
+                Map.entry("title.coordinates", "Координаты"),
+                Map.entry("label.x", "X"),
+                Map.entry("label.y", "Y"),
+                Map.entry("label.creation_date", "Дата создания"),
+                Map.entry("label.minimal_point", "Минимальный балл"),
+                Map.entry("label.description", "Описание"),
+                Map.entry("label.difficulty", "Сложность"),
+                Map.entry("title.discipline", "Дисциплина"),
+                Map.entry("label.discipline_name", "Название дисциплины"),
+                Map.entry("label.practice_hours", "Часы практики"),*/
 
-        addFilterableColumn("Key", c -> c.getValue().getKey());
+        addFilterableColumn(languageManager.get("label.key"), c -> c.getValue().getKey());
         addFilterableColumn("ID", c -> String.valueOf(c.getValue().getId()));
-        addFilterableColumn("Name", c -> c.getValue().getName());
-        addFilterableColumn("Coordinates", c -> {
+        addFilterableColumn(languageManager.get("label.name"), c -> c.getValue().getName());
+        addFilterableColumn(languageManager.get("title.coordinates"), c -> {
             var coords = c.getValue().getCoordinates();
             return "(" + coords.getX() + ", " + coords.getY() + ")";
         });
-        addFilterableColumn("Created", c -> c.getValue().getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        addFilterableColumn("Minimal Point", c -> String.valueOf(c.getValue().getMinimalPoint()));
-        addFilterableColumn("Description", c -> c.getValue().getDescription());
-        addFilterableColumn("Difficulty", c -> c.getValue().getDifficulty().name());
-        addFilterableColumn("Discipline", c -> {
+        addFilterableColumn(languageManager.get("label.creation_date"), c -> c.getValue().getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        addFilterableColumn(languageManager.get("label.minimal_point"), c -> String.valueOf(c.getValue().getMinimalPoint()));
+        addFilterableColumn(languageManager.get("label.description"), c -> c.getValue().getDescription());
+        addFilterableColumn(languageManager.get("label.difficulty"), c -> c.getValue().getDifficulty().name());
+        addFilterableColumn(languageManager.get("label.discipline"), c -> {
             var d = c.getValue().getDiscipline();
             return d.getName() + " (" + d.getPracticeHours() + " ч)";
         });
-        addFilterableColumn("Owner ID", c -> String.valueOf(c.getValue().getOwnerId()));
-
-        setRowFactory(tv -> {
-            TableRow<LabWorkWithKey> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (!row.isEmpty() && event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                    LabWorkWithKey selected = row.getItem();
-                    // TODO: Open Edit dialog
-                }
-            });
-            return row;
-        });
+        addFilterableColumn(languageManager.get("label.owner_id"), c -> String.valueOf(c.getValue().getOwnerId()));
     }
 
     private void addFilterableColumn(String title,

@@ -15,6 +15,7 @@ public class LanguageManager {
 
     private LanguageManager() {
         addLocale("ru", Map.ofEntries(
+                Map.entry("title.main", "Менеджер LabWork"),
                 Map.entry("title.login", "Вход / Регистрация"),
                 Map.entry("label.login", "Логин"),
                 Map.entry("label.password", "Пароль"),
@@ -26,7 +27,7 @@ public class LanguageManager {
                 Map.entry("title.edit_labwork", "Редактирование LabWork"),
 
                 Map.entry("label.key", "Ключ"),
-                Map.entry("label.name", "Название"),
+                Map.entry("label.name", "Имя"),
                 Map.entry("title.coordinates", "Координаты"),
                 Map.entry("label.x", "X"),
                 Map.entry("label.y", "Y"),
@@ -37,9 +38,14 @@ public class LanguageManager {
                 Map.entry("title.discipline", "Дисциплина"),
                 Map.entry("label.discipline_name", "Название дисциплины"),
                 Map.entry("label.practice_hours", "Часы практики"),
+                Map.entry("label.owner_id", "ID владельца"),
 
                 Map.entry("button.ok", "ОК"),
                 Map.entry("button.cancel", "Отмена"),
+                Map.entry("button.create", "Создать"),
+                Map.entry("button.edit", "Редактировать"),
+                Map.entry("button.delete", "Удалить"),
+                Map.entry("button.clear", "Очистить"),
 
                 Map.entry("user_label", "Пользователь"),
 
@@ -59,7 +65,8 @@ public class LanguageManager {
                 Map.entry("error.exception", "Исключение")
         ));
 
-        addLocale("en", Map.ofEntries(
+        addLocale(new Locale("en", "NZ"), Map.ofEntries(
+                Map.entry("title.main", "LabWork Manager"),
                 Map.entry("title.login", "Login / Register"),
                 Map.entry("label.login", "Login"),
                 Map.entry("label.password", "Password"),
@@ -82,9 +89,14 @@ public class LanguageManager {
                 Map.entry("title.discipline", "Discipline"),
                 Map.entry("label.discipline_name", "Discipline Name"),
                 Map.entry("label.practice_hours", "Practice Hours"),
+                Map.entry("label.owner_id", "Owner ID"),
 
                 Map.entry("button.ok", "OK"),
                 Map.entry("button.cancel", "Cancel"),
+                Map.entry("button.create", "Create"),
+                Map.entry("button.edit", "Edit"),
+                Map.entry("button.delete", "Delete"),
+                Map.entry("button.clear", "Clear"),
 
                 Map.entry("user_label", "User"),
 
@@ -105,6 +117,7 @@ public class LanguageManager {
         ));
 
         addLocale("mk", Map.ofEntries(
+                Map.entry("title.main", "Менџер на LabWork"),
                 Map.entry("title.login", "Најава / Регистрација"),
                 Map.entry("label.login", "Корисничко име"),
                 Map.entry("label.password", "Лозинка"),
@@ -127,9 +140,14 @@ public class LanguageManager {
                 Map.entry("title.discipline", "Дисциплина"),
                 Map.entry("label.discipline_name", "Име на дисциплина"),
                 Map.entry("label.practice_hours", "Часови практика"),
+                Map.entry("label.owner_id", "ИД на сопственикот"),
 
                 Map.entry("button.ok", "ВО РЕД"),
-                Map.entry("button.cancel", "Откажи"),
+                Map.entry("button.cancel",   "Откажи"),
+                Map.entry("button.create", "Креирај"),
+                Map.entry("button.edit", "Уреди"),
+                Map.entry("button.delete", "Избриши"),
+                Map.entry("button.clear", "Исчисти"),
 
                 Map.entry("user_label", "Корисник"),
 
@@ -150,6 +168,7 @@ public class LanguageManager {
         ));
 
         addLocale("sq", Map.ofEntries(
+                Map.entry("title.main", "Menaxheri i LabWork"),
                 Map.entry("title.login", "Hyrje / Regjistrim"),
                 Map.entry("label.login", "Përdoruesi"),
                 Map.entry("label.password", "Fjalëkalimi"),
@@ -172,9 +191,14 @@ public class LanguageManager {
                 Map.entry("title.discipline", "Disiplina"),
                 Map.entry("label.discipline_name", "Emri i disiplinës"),
                 Map.entry("label.practice_hours", "Orë praktike"),
+                Map.entry("label.owner_id", "ID i pronarit"),
 
                 Map.entry("button.ok", "OK"),
                 Map.entry("button.cancel", "Anulo"),
+                Map.entry("button.create", "Krijo"),
+                Map.entry("button.edit", "Ndrysho"),
+                Map.entry("button.delete", "Fshi"),
+                Map.entry("button.clear", "Pastro"),
 
                 Map.entry("user_label", "Përdoruesi"),
 

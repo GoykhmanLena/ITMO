@@ -11,7 +11,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ru.lenok.common.CommandResponse;
-import ru.lenok.common.models.*;
+import ru.lenok.common.models.Difficulty;
+import ru.lenok.common.models.LabWork;
+import ru.lenok.common.models.LabWorkWithKey;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,8 +35,6 @@ public class LabWorkForm extends Stage {
                 ? languageManager.get("title.create_labwork")
                 : languageManager.get("title.edit_labwork"));
         initModality(Modality.APPLICATION_MODAL);
-
-        HBox topBar = createTopBar();
 
         errorBox = new VBox(5);
         errorBox.setPadding(new Insets(10));
@@ -136,7 +136,7 @@ public class LabWorkForm extends Stage {
             okButtonHandler(existing, keyField, nameField, xField, yField, minPointField, descArea, difficultyBox, discNameField, discHoursField);
         });
 
-        VBox root = new VBox(topBar, errorBox, grid);
+        VBox root = new VBox(errorBox, grid);
         ScrollPane scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
 
@@ -144,28 +144,6 @@ public class LabWorkForm extends Stage {
         setScene(scene);
         setMinWidth(400);
         setMinHeight(400);
-    }
-
-    private HBox createTopBar() {
-        HBox topBar = new HBox(10);
-        topBar.setPadding(new Insets(10));
-        topBar.setAlignment(Pos.TOP_RIGHT);
-        topBar.setStyle("-fx-background-color: #f0f0f0");
-
-        Label userLabel = new Label(languageManager.get("user_label") + ": " + clientService.getUser().getUsername());
-        ComboBox<String> langBox = new ComboBox<>();
-        langBox.getItems().addAll("Русский", "Македонски", "Shqip", "English (NZ)");
-        langBox.getSelectionModel().select(languageManager.getCurrentLanguageName());
-
-        langBox.setOnAction(e -> {
-            languageManager.setLanguage(langBox.getSelectionModel().getSelectedItem());
-            // TODO: Обновить форму при смене языка (если нужно)
-        });
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        topBar.getChildren().addAll(userLabel, spacer, langBox);
-        return topBar;
     }
 
     private void okButtonHandler(LabWorkWithKey existing, TextField keyField, TextField nameField, TextField xField, TextField yField, TextField minPointField, TextArea descArea, ComboBox<Difficulty> difficultyBox, TextField discNameField, TextField discHoursField) {

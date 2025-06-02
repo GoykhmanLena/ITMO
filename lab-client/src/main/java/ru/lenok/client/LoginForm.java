@@ -33,7 +33,7 @@ public class LoginForm {
         errorLabel.setStyle("-fx-text-fill: red;");
 
         Button loginButton = new Button();
-        Button cancelButton = new Button("Cancel");
+        Button cancelButton = new Button(languageManager.get("button.cancel"));
 
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
