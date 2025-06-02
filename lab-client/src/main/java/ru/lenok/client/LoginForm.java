@@ -1,5 +1,6 @@
 package ru.lenok.client;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -21,10 +22,12 @@ public class LoginForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
     private final ClientService clientService = ClientService.getINSTANCE();
 
-    public LoginForm() {
-    }
-
     public void start(Stage stage) {
+        stage.setOnCloseRequest(event -> {
+            Platform.exit();
+            System.exit(0);
+        });
+
         TextField loginField = new TextField(UUID.randomUUID().toString().substring(0, 8));
         PasswordField passwordField = new PasswordField();
         passwordField.setText(UUID.randomUUID().toString().substring(0, 8));
@@ -68,7 +71,10 @@ public class LoginForm {
             }
         });
 
-        cancelButton.setOnAction(e -> stage.close());
+        cancelButton.setOnAction(e -> {
+            Platform.exit();
+            System.exit(0);
+        });
 
         HBox topLangBox = new HBox(langBox);
         topLangBox.setAlignment(Pos.TOP_RIGHT);

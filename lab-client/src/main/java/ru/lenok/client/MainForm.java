@@ -33,6 +33,11 @@ public class MainForm {
         this.stage = stage;
         labWorks.addAll(labWorkList);
         clientService.registerNotificationListener(this::notifyListChanged);
+
+        this.stage.setOnCloseRequest(event -> {
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
     public void notifyListChanged(List<LabWorkWithKey> list){
@@ -73,7 +78,8 @@ public class MainForm {
         leftPane.setPadding(new Insets(10));
         leftPane.setVgrow(splitPane, Priority.ALWAYS);
 
-        LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks, filteredLabWorks::setPredicate);
+        //LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks, filteredLabWorks::setPredicate);
+        LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks);
         Button addButton = new Button("Add");
         addButton.setOnAction(e -> {
             LabWorkForm form = new LabWorkForm(null);
