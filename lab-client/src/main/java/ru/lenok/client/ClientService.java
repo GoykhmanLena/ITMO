@@ -4,6 +4,7 @@ import lombok.Data;
 import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.CommandWithArgument;
+import ru.lenok.common.auth.LoginResponse;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
@@ -52,9 +53,22 @@ public class ClientService {
         return notificationListener;
     }
 
-    public void insertLabWork(LabWorkWithKey labWorkWithKey){
+    public CommandResponse insertLabWork(LabWorkWithKey labWorkWithKey){
         CommandBehavior behavior = commandDefinitions.get("insert");
         CommandRequest showRequest = new CommandRequest(new CommandWithArgument("insert", behavior , labWorkWithKey.getKey(), null), labWorkWithKey, user, getServerNotificationPort());
-        CommandResponse commandResponse = getConnector().sendCommand(showRequest);
+        return getConnector().sendCommand(showRequest);
+    }
+
+    public void login(String login, String password, boolean register) throws Exception {
+        User user = new User(login, password);
+        Map<String, CommandBehavior> commandDefinitions = getConnector().sendHello(register, user);
+        setUser(user);
+        setCommandDefinitions(commandDefinitions);
+    }
+
+    public CommandResponse getAllLabWorks() throws Exception {
+        CommandBehavior show = commandDefinitions.get("show");
+        CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(showRequest);
     }
 }

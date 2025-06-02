@@ -8,22 +8,23 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ru.lenok.common.CommandResponse;
 import ru.lenok.common.models.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Optional;
 
 public class LabWorkForm extends Stage {
 
     private LabWorkWithKey result;
+    private final VBox errorBox;
+    private final DatePicker datePicker;
 
     public LabWorkForm(LabWorkWithKey existing) {
         setTitle(existing == null ? "Create LabWork" : "Edit LabWork");
         initModality(Modality.APPLICATION_MODAL);
 
-        VBox errorBox = new VBox(5);
+        errorBox = new VBox(5);
         errorBox.setPadding(new Insets(10));
 
         GridPane grid = new GridPane();
@@ -54,8 +55,16 @@ public class LabWorkForm extends Stage {
         coordGroup.setCollapsible(false);
         grid.add(coordGroup, 0, row++, 2, 1);
 
-        DatePicker datePicker = new DatePicker(LocalDate.now());
-        grid.add(new Label("Creation Date:"), 0, row);
+        datePicker = new DatePicker(existing == null ? LocalDate.now() : existing.getCreationDate().toLocalDate());
+        Label dateLabel = new Label("Creation Date:");
+        if (existing == null) {
+            // Скрываем поле даты и лейбл при создании
+            datePicker.setVisible(false);
+            datePicker.setManaged(false);
+            dateLabel.setVisible(false);
+            dateLabel.setManaged(false);
+        }
+        grid.add(dateLabel, 0, row);
         grid.add(datePicker, 1, row++);
 
         TextField minPointField = new TextField();
@@ -85,6 +94,7 @@ public class LabWorkForm extends Stage {
         buttonBox.setPadding(new Insets(10, 0, 0, 0));
         buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
         Button okBtn = new Button("OK");
+        okBtn.setDefaultButton(true);
         Button cancelBtn = new Button("Cancel");
         buttonBox.getChildren().addAll(okBtn, cancelBtn);
         grid.add(buttonBox, 0, row, 2, 1);
@@ -94,7 +104,7 @@ public class LabWorkForm extends Stage {
             nameField.setText(existing.getName());
             xField.setText(String.valueOf(existing.getCoordinates().getX()));
             yField.setText(String.valueOf(existing.getCoordinates().getY()));
-            datePicker.setValue(existing.getCreationDate().toLocalDate());
+            // datePicker уже установлен выше
             minPointField.setText(String.valueOf(existing.getMinimalPoint()));
             descArea.setText(existing.getDescription());
             difficultyBox.setValue(existing.getDifficulty());
@@ -105,123 +115,148 @@ public class LabWorkForm extends Stage {
         cancelBtn.setOnAction(e -> close());
 
         okBtn.setOnAction(e -> {
-            errorBox.getChildren().clear();
-            keyField.setStyle(null);
-            nameField.setStyle(null);
-            xField.setStyle(null);
-            yField.setStyle(null);
-            minPointField.setStyle(null);
-            descArea.setStyle(null);
-            difficultyBox.setStyle(null);
-            discNameField.setStyle(null);
-            discHoursField.setStyle(null);
-
-            boolean valid = true;
-
-            String key = keyField.getText().trim();
-            if (key.isEmpty()) {
-                addError(errorBox, keyField, "Значение поля не может быть пустым, пожалуйста введите хоть что-то");
-                valid = false;
-            }
-
-            String name = nameField.getText().trim();
-            if (name.isEmpty()) {
-                addError(errorBox, nameField, "Значение поля не может быть пустым, пожалуйста введите хоть что-то");
-                valid = false;
-            }
-
-            double x = 0;
-            try {
-                x = Double.parseDouble(xField.getText().trim());
-            } catch (NumberFormatException ex) {
-                addError(errorBox, xField, "Значение должно быть double");
-                valid = false;
-            }
-
-            float y = 0;
-            try {
-                y = Float.parseFloat(yField.getText().trim());
-            } catch (NumberFormatException ex) {
-                addError(errorBox, yField, "Значение должно быть float");
-                valid = false;
-            }
-
-            double minPoint = 0;
-            try {
-                minPoint = Double.parseDouble(minPointField.getText().trim());
-            } catch (NumberFormatException ex) {
-                addError(errorBox, minPointField, "Значение должно быть double");
-                valid = false;
-            }
-
-            String desc = descArea.getText().trim();
-            if (desc.isEmpty()) {
-                addError(errorBox, descArea, "Значение поля не может быть пустым, пожалуйста введите хоть что-то");
-                valid = false;
-            } else if (desc.length() > 2863) {
-                addError(errorBox, descArea, "Слишком много букав, сократи!!!");
-                valid = false;
-            }
-
-            Difficulty difficulty = difficultyBox.getValue();
-            if (difficulty == null) {
-                addError(errorBox, difficultyBox, "Это не вариант из списка, повторите ввод");
-                valid = false;
-            }
-
-            String discName = discNameField.getText().trim();
-            if (discName.isEmpty()) {
-                addError(errorBox, discNameField, "Значение поля не может быть пустым, пожалуйста введите хоть что-то");
-                valid = false;
-            }
-
-            long hours = 0;
-            try {
-                hours = Long.parseLong(discHoursField.getText().trim());
-            } catch (NumberFormatException ex) {
-                addError(errorBox, discHoursField, "Поле должно быть Long");
-                valid = false;
-            }
-
-            if (!valid) return;
-
-            try {
-                LocalDateTime date = datePicker.getValue().atStartOfDay();
-                Long ownerId = ClientService.getINSTANCE().getUser().getId();
-
-                LabWork lw = new LabWork.Builder()
-                        .setName(name)
-                        .setCoordinateX(x)
-                        .setCoordinateY(y)
-                        .setCreationDate(date)
-                        .setMinimalPoint(minPoint)
-                        .setDescription(desc)
-                        .setDifficulty(difficulty)
-                        .setDisciplineName(discName)
-                        .setDisciplinePracticeHours(hours)
-                        .setOwnerId(ownerId)
-                        .build();
-
-                result = new LabWorkWithKey(key, lw);
-                close();
-            } catch (Exception ex) {
-                new Alert(Alert.AlertType.ERROR, "Ошибка: " + ex.getMessage()).showAndWait();
-            }
+            okButtonHandler(existing, keyField, nameField, xField, yField, minPointField, descArea, difficultyBox, discNameField, discHoursField);
         });
 
         VBox root = new VBox(errorBox, grid);
         ScrollPane scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
+
         Scene scene = new Scene(scrollPane, 500, Region.USE_COMPUTED_SIZE);
         setScene(scene);
         setMinWidth(400);
+        setMinHeight(400);
     }
 
-    private void addError(Pane errorBox, Control field, String msg) {
+    private void okButtonHandler(LabWorkWithKey existing, TextField keyField, TextField nameField, TextField xField, TextField yField, TextField minPointField, TextArea descArea, ComboBox<Difficulty> difficultyBox, TextField discNameField, TextField discHoursField) {
+        errorBox.getChildren().clear();
+        resetFieldStyles(keyField, nameField, xField, yField, minPointField, descArea, difficultyBox, discNameField, discHoursField);
+
+        boolean valid = true;
+
+        String key = keyField.getText().trim();
+        if (key.isEmpty()) {
+            addError(keyField, "Поле 'Key': значение не может быть пустым, пожалуйста введите хоть что-то");
+            valid = false;
+        }
+
+        String name = nameField.getText().trim();
+        if (name.isEmpty()) {
+            addError(nameField, "Поле 'Name': значение не может быть пустым, пожалуйста введите хоть что-то");
+            valid = false;
+        }
+
+        double x = 0;
+        try {
+            x = Double.parseDouble(xField.getText().trim());
+        } catch (NumberFormatException ex) {
+            addError(xField, "Поле 'X': значение должно быть double");
+            valid = false;
+        }
+
+        float y = 0;
+        try {
+            y = Float.parseFloat(yField.getText().trim());
+        } catch (NumberFormatException ex) {
+            addError(yField, "Поле 'Y': значение должно быть float");
+            valid = false;
+        }
+
+        double minPoint = 0;
+        try {
+            minPoint = Double.parseDouble(minPointField.getText().trim());
+            if (minPoint < 0) {
+                addError(minPointField, "Поле 'Minimal Point': значение должно быть >= 0");
+                valid = false;
+            }
+        } catch (NumberFormatException ex) {
+            addError(minPointField, "Поле 'Minimal Point': значение должно быть double");
+            valid = false;
+        }
+
+        String desc = descArea.getText().trim();
+        if (desc.isEmpty()) {
+            addError(descArea, "Поле 'Description': значение не может быть пустым, пожалуйста введите хоть что-то");
+            valid = false;
+        } else if (desc.length() > 2863) {
+            addError(descArea, "Поле 'Description': слишком много букав, сократи!!!");
+            valid = false;
+        }
+
+        Difficulty difficulty = difficultyBox.getValue();
+        if (difficulty == null) {
+            addError(difficultyBox, "Поле 'Difficulty': это не вариант из списка, повторите ввод");
+            valid = false;
+        }
+
+        String discName = discNameField.getText().trim();
+        if (discName.isEmpty()) {
+            addError(discNameField, "Поле 'Discipline Name': значение не может быть пустым, пожалуйста введите хоть что-то");
+            valid = false;
+        }
+
+        long hours = 0;
+        try {
+            hours = Long.parseLong(discHoursField.getText().trim());
+        } catch (NumberFormatException ex) {
+            addError(discHoursField, "Поле 'Practice Hours': поле должно быть Long");
+            valid = false;
+        }
+
+        if (!valid) {
+            sizeToScene();
+            return;
+        }
+
+        try {
+            LocalDateTime date;
+            if (existing == null) {
+                // При создании берем now()
+                date = LocalDateTime.now();
+            } else {
+                // При редактировании берем из datePicker
+                date = datePicker.getValue().atStartOfDay();
+            }
+
+            Long ownerId = ClientService.getINSTANCE().getUser().getId();
+
+            LabWork lw = new LabWork.Builder()
+                    .setName(name)
+                    .setCoordinateX(x)
+                    .setCoordinateY(y)
+                    .setCreationDate(date)
+                    .setMinimalPoint(minPoint)
+                    .setDescription(desc)
+                    .setDifficulty(difficulty)
+                    .setDisciplineName(discName)
+                    .setDisciplinePracticeHours(hours)
+                    .setOwnerId(ownerId)
+                    .build();
+
+            result = new LabWorkWithKey(key, lw);
+            CommandResponse insertResponse = ClientService.getINSTANCE().insertLabWork(result);
+            if (insertResponse.getError() != null) {
+                new Alert(Alert.AlertType.ERROR, "Ошибка: " + insertResponse.getError()).showAndWait();
+            }
+            else {
+                close();
+            }
+        } catch (Exception ex) {
+            new Alert(Alert.AlertType.ERROR, "Ошибка: " + ex.getMessage()).showAndWait();
+        }
+    }
+
+    private void addError(Control field, String msg) {
         field.setStyle("-fx-border-color: red;");
         Text text = new Text(msg);
         text.setFill(Color.RED);
         errorBox.getChildren().add(text);
+    }
+
+    private void resetFieldStyles(Control... fields) {
+        for (Control f : fields) {
+            f.setStyle(null);
+        }
     }
 
     public LabWorkWithKey getResult() {

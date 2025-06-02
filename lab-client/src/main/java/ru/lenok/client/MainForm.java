@@ -84,10 +84,6 @@ public class MainForm {
         addButton.setOnAction(e -> {
             LabWorkForm form = new LabWorkForm(null);
             form.showAndWait();
-            LabWorkWithKey labWorkWithKey = form.getResult();
-            if (labWorkWithKey != null){
-                clientService.insertLabWork(labWorkWithKey);
-            }
         });
 
         leftPane.getChildren().addAll(tableView, addButton);

@@ -7,15 +7,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
-import ru.lenok.common.CommandWithArgument;
-import ru.lenok.common.auth.User;
-import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class LoginForm {
@@ -40,6 +35,10 @@ public class LoginForm {
         Button loginButton = new Button();
         Button cancelButton = new Button("Cancel");
 
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setVisible(false);
+        progressIndicator.setPrefSize(25, 25);
+
         ComboBox<String> langBox = new ComboBox<>();
         langBox.getItems().addAll("Русский", "Македонски", "Shqip", "English (NZ)");
         langBox.getSelectionModel().select(languageManager.getCurrentLanguageName());
@@ -52,22 +51,31 @@ public class LoginForm {
             if (loginField.getText().isEmpty() || passwordField.getText().isEmpty()) {
                 errorLabel.setText(languageManager.get("error.empty_fields"));
             } else {
-                try {
-                    User user = new User(loginField.getText(), passwordField.getText());
-                    Map<String, CommandBehavior> commandDefinitions = clientService.getConnector().sendHello(registerBox.isSelected(), user);
-                    clientService.setCommandDefinitions(commandDefinitions);
-                    CommandBehavior show = commandDefinitions.get("show");
-                    CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user, clientService.getServerNotificationPort());
-                    CommandResponse commandResponse = clientService.getConnector().sendCommand(showRequest);
-                    List<LabWorkWithKey> labWorkList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
-                    clientService.setUser(user);
-                    stage.close(); // закрыть LoginForm
-                    Stage mainStage = new Stage(); // создаём новое окно для MainForm
-                    mainStage.setMaximized(true);
-                    new MainForm(labWorkList, mainStage).start();
-                } catch (Exception ex) {
-                    errorLabel.setText(ex.getMessage());
-                }
+                errorLabel.setText("");
+                loginButton.setDisable(true);
+                progressIndicator.setVisible(true);
+
+                new Thread(() -> {
+                    try {
+                        clientService.login(loginField.getText(), passwordField.getText(), registerBox.isSelected());
+                        CommandResponse commandResponse = clientService.getAllLabWorks();
+                        List<LabWorkWithKey> labWorkList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
+
+                        Platform.runLater(() -> {
+                            stage.close();
+                            Stage mainStage = new Stage();
+                            mainStage.setMaximized(true);
+                            new MainForm(labWorkList, mainStage).start();
+                        });
+                    } catch (Exception ex) {
+                        Platform.runLater(() -> {
+                            errorLabel.setText(ex.getMessage());
+                            loginButton.setDisable(false);
+                            cancelButton.setDisable(false);
+                            progressIndicator.setVisible(false);
+                        });
+                    }
+                }).start();
             }
         });
 
@@ -102,8 +110,8 @@ public class LoginForm {
 
         grid.add(errorLabel, 0, 3, 2, 1);
 
-        HBox buttonBox = new HBox(10, cancelButton, loginButton);
-        buttonBox.setAlignment(Pos.CENTER);
+        HBox buttonBox = new HBox(10, cancelButton, loginButton, progressIndicator);
+        buttonBox.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(cancelButton, Priority.ALWAYS);
         HBox.setHgrow(loginButton, Priority.ALWAYS);
         cancelButton.setMaxWidth(Double.MAX_VALUE);
@@ -120,7 +128,7 @@ public class LoginForm {
         Scene scene = new Scene(root, 400, Region.USE_COMPUTED_SIZE);
         stage.setScene(scene);
         stage.setTitle(languageManager.get("title.login"));
-        stage.sizeToScene(); // корректирует высоту под содержимое
+        stage.sizeToScene();
         stage.show();
     }
 }
