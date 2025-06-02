@@ -29,10 +29,11 @@ public class LabWorkForm extends Stage {
     private final Button cancelBtn;
 
     public LabWorkForm(LabWorkWithKey existing) {
-        setTitle(existing == null ? "Create LabWork" : "Edit LabWork");
+        setTitle(existing == null
+                ? languageManager.get("title.create_labwork")
+                : languageManager.get("title.edit_labwork"));
         initModality(Modality.APPLICATION_MODAL);
 
-        // Верхняя панель с пользователем и выбором языка
         HBox topBar = createTopBar();
 
         errorBox = new VBox(5);
@@ -51,24 +52,24 @@ public class LabWorkForm extends Stage {
         int row = 0;
 
         TextField keyField = new TextField();
-        grid.add(new Label("Key:"), 0, row);
+        grid.add(new Label(languageManager.get("label.key")), 0, row);
         grid.add(keyField, 1, row++);
 
         TextField nameField = new TextField();
-        grid.add(new Label("Name:"), 0, row);
+        grid.add(new Label(languageManager.get("label.name")), 0, row);
         grid.add(nameField, 1, row++);
 
         VBox coordBox = new VBox(5);
         TextField xField = new TextField();
         TextField yField = new TextField();
-        coordBox.getChildren().addAll(new Label("X:"), xField, new Label("Y:"), yField);
-        TitledPane coordGroup = new TitledPane("Coordinates", coordBox);
+        coordBox.getChildren().addAll(new Label(languageManager.get("label.x")), xField, new Label(languageManager.get("label.y")), yField);
+        TitledPane coordGroup = new TitledPane(languageManager.get("title.coordinates"), coordBox);
         coordGroup.setCollapsible(false);
         grid.add(coordGroup, 0, row++, 2, 1);
 
         datePicker = new DatePicker(existing == null ? LocalDate.now() : existing.getCreationDate().toLocalDate());
         datePicker.getEditor().setDisable(true);
-        Label dateLabel = new Label("Creation Date:");
+        Label dateLabel = new Label(languageManager.get("label.creation_date"));
         if (existing == null) {
             datePicker.setVisible(false);
             datePicker.setManaged(false);
@@ -79,34 +80,38 @@ public class LabWorkForm extends Stage {
         grid.add(datePicker, 1, row++);
 
         TextField minPointField = new TextField();
-        grid.add(new Label("Minimal Point:"), 0, row);
+        grid.add(new Label(languageManager.get("label.minimal_point")), 0, row);
         grid.add(minPointField, 1, row++);
 
         TextArea descArea = new TextArea();
         descArea.setWrapText(true);
         descArea.setPrefRowCount(3);
-        grid.add(new Label("Description:"), 0, row);
+        grid.add(new Label(languageManager.get("label.description")), 0, row);
         grid.add(descArea, 1, row++);
 
         ComboBox<Difficulty> difficultyBox = new ComboBox<>();
         difficultyBox.getItems().setAll(Difficulty.values());
-        grid.add(new Label("Difficulty:"), 0, row);
+        grid.add(new Label(languageManager.get("label.difficulty")), 0, row);
         grid.add(difficultyBox, 1, row++);
 
         VBox disciplineBox = new VBox(5);
         TextField discNameField = new TextField();
         TextField discHoursField = new TextField();
-        disciplineBox.getChildren().addAll(new Label("Name:"), discNameField, new Label("Practice Hours:"), discHoursField);
-        TitledPane disciplineGroup = new TitledPane("Discipline", disciplineBox);
+        disciplineBox.getChildren().addAll(
+                new Label(languageManager.get("label.discipline_name")),
+                discNameField,
+                new Label(languageManager.get("label.practice_hours")),
+                discHoursField);
+        TitledPane disciplineGroup = new TitledPane(languageManager.get("title.discipline"), disciplineBox);
         disciplineGroup.setCollapsible(false);
         grid.add(disciplineGroup, 0, row++, 2, 1);
 
         HBox buttonBox = new HBox(10);
         buttonBox.setPadding(new Insets(10, 0, 0, 0));
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        okBtn = new Button("OK");
+        okBtn = new Button(languageManager.get("button.ok"));
         okBtn.setDefaultButton(true);
-        cancelBtn = new Button("Cancel");
+        cancelBtn = new Button(languageManager.get("button.cancel"));
         progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
         progressIndicator.setMaxSize(24, 24);
@@ -154,7 +159,7 @@ public class LabWorkForm extends Stage {
 
         langBox.setOnAction(e -> {
             languageManager.setLanguage(langBox.getSelectionModel().getSelectedItem());
-            // Можно добавить логику обновления формы при смене языка, если нужно
+            // TODO: Обновить форму при смене языка (если нужно)
         });
 
         Region spacer = new Region();
@@ -171,13 +176,13 @@ public class LabWorkForm extends Stage {
 
         String key = keyField.getText().trim();
         if (key.isEmpty()) {
-            addError(keyField, "'Key': значение не может быть пустым, пожалуйста введите хоть что-то");
+            addError(keyField, languageManager.get("error.key.empty"));
             valid = false;
         }
 
         String name = nameField.getText().trim();
         if (name.isEmpty()) {
-            addError(nameField, "'Name': значение не может быть пустым, пожалуйста введите хоть что-то");
+            addError(nameField, languageManager.get("error.name.empty"));
             valid = false;
         }
 
@@ -185,7 +190,7 @@ public class LabWorkForm extends Stage {
         try {
             x = Double.parseDouble(xField.getText().trim());
         } catch (NumberFormatException ex) {
-            addError(xField, "'X': значение должно быть double");
+            addError(xField, languageManager.get("error.x.invalid"));
             valid = false;
         }
 
@@ -193,7 +198,7 @@ public class LabWorkForm extends Stage {
         try {
             y = Float.parseFloat(yField.getText().trim());
         } catch (NumberFormatException ex) {
-            addError(yField, "'Y': значение должно быть float");
+            addError(yField, languageManager.get("error.y.invalid"));
             valid = false;
         }
 
@@ -201,32 +206,32 @@ public class LabWorkForm extends Stage {
         try {
             minPoint = Double.parseDouble(minPointField.getText().trim());
             if (minPoint < 0) {
-                addError(minPointField, "'Minimal Point': значение должно быть >= 0");
+                addError(minPointField, languageManager.get("error.min_point.negative"));
                 valid = false;
             }
         } catch (NumberFormatException ex) {
-            addError(minPointField, "'Minimal Point': значение должно быть double");
+            addError(minPointField, languageManager.get("error.min_point.invalid"));
             valid = false;
         }
 
         String desc = descArea.getText().trim();
         if (desc.isEmpty()) {
-            addError(descArea, "'Description': значение не может быть пустым, пожалуйста введите хоть что-то");
+            addError(descArea, languageManager.get("error.description.empty"));
             valid = false;
         } else if (desc.length() > 2863) {
-            addError(descArea, "'Description': слишком много букав, сократи!!!");
+            addError(descArea, languageManager.get("error.description.toolong"));
             valid = false;
         }
 
         Difficulty difficulty = difficultyBox.getValue();
         if (difficulty == null) {
-            addError(difficultyBox, "'Difficulty': это не вариант из списка, повторите ввод");
+            addError(difficultyBox, languageManager.get("error.difficulty.empty"));
             valid = false;
         }
 
         String discName = discNameField.getText().trim();
         if (discName.isEmpty()) {
-            addError(discNameField, "'Discipline Name': значение не может быть пустым, пожалуйста введите хоть что-то");
+            addError(discNameField, languageManager.get("error.discipline_name.empty"));
             valid = false;
         }
 
@@ -234,7 +239,7 @@ public class LabWorkForm extends Stage {
         try {
             hours = Long.parseLong(discHoursField.getText().trim());
         } catch (NumberFormatException ex) {
-            addError(discHoursField, "'Practice Hours': значение должно быть Long");
+            addError(discHoursField, languageManager.get("error.practice_hours.invalid"));
             valid = false;
         }
 
@@ -273,7 +278,7 @@ public class LabWorkForm extends Stage {
 
                 Platform.runLater(() -> {
                     if (insertResponse.getError() != null) {
-                        new Alert(Alert.AlertType.ERROR, "Ошибка: " + insertResponse.getError()).showAndWait();
+                        new Alert(Alert.AlertType.ERROR, languageManager.get("error.insert") + ": " + insertResponse.getError()).showAndWait();
                         okBtn.setDisable(false);
                         progressIndicator.setVisible(false);
                     } else {
@@ -282,7 +287,7 @@ public class LabWorkForm extends Stage {
                 });
             } catch (Exception ex) {
                 Platform.runLater(() -> {
-                    new Alert(Alert.AlertType.ERROR, "Ошибка: " + ex.getMessage()).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, languageManager.get("error.exception") + ": " + ex.getMessage()).showAndWait();
                     okBtn.setDisable(false);
                     progressIndicator.setVisible(false);
                 });
