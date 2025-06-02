@@ -23,8 +23,8 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
     private final FilteredList<LabWorkWithKey> filteredData;
     private final SortedList<LabWorkWithKey> sortedData;
 
-    // Храним фильтры по столбцам
-    private final Map<TableColumn<LabWorkWithKey, ?>, String> columnFilters = new HashMap<>();
+    // Хранение фильтров по колонкам
+    private final Map<TableColumn<LabWorkWithKey, String>, String> columnFilters = new HashMap<>();
 
     public LabWorkTableView(ObservableList<LabWorkWithKey> data) {
         this.filteredData = new FilteredList<>(data, p -> true);
@@ -79,25 +79,42 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         filterButton.setPadding(new Insets(0, 3, 0, 3));
         filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        filterButton.setOnAction(e -> showFilterPopup(filterButton, filterText -> {
-            if (filterText == null || filterText.isBlank()) {
-                columnFilters.remove(column);
-            } else {
-                columnFilters.put(column, filterText.toLowerCase());
-            }
-            applyFilters();
-        }));
-
         Button clearFilterButton = new Button("✖"); // крестик сброса
         clearFilterButton.setFocusTraversable(false);
         clearFilterButton.setPadding(new Insets(0, 3, 0, 3));
         clearFilterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+
+        // Метод для обновления стиля лупы в зависимости от наличия фильтра
+        Runnable updateFilterButtonStyle = () -> {
+            String filter = columnFilters.get(column);
+            if (filter != null && !filter.isBlank()) {
+                filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #0078D7;");
+            } else {
+                filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+            }
+        };
+
+        filterButton.setOnAction(e -> {
+            String currentFilter = columnFilters.getOrDefault(column, "");
+            showFilterPopup(filterButton, currentFilter, filterText -> {
+                if (filterText == null || filterText.isBlank()) {
+                    columnFilters.remove(column);
+                } else {
+                    columnFilters.put(column, filterText.toLowerCase());
+                }
+                applyFilters();
+                updateFilterButtonStyle.run();
+            });
+        });
+
         clearFilterButton.setOnAction(e -> {
             columnFilters.remove(column);
             applyFilters();
+            updateFilterButtonStyle.run();
         });
 
-        // Контейнер для кнопок фильтра под заголовком
+        updateFilterButtonStyle.run();
+
         HBox buttonsBox = new HBox(filterButton, clearFilterButton);
         buttonsBox.setSpacing(5);
         buttonsBox.setPadding(new Insets(2, 0, 0, 0));
@@ -108,10 +125,9 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         headerBox.setPadding(new Insets(2, 0, 2, 0));
         headerBox.setStyle("-fx-alignment: center;");
 
-        // Клик по заголовку (теперь по VBox), кроме кнопок
         headerBox.setOnMouseClicked(event -> {
             if (event.getTarget() == filterButton || event.getTarget() == clearFilterButton) {
-                return; // клик по кнопкам фильтра не сортируем
+                return;
             }
             if (event.getButton() == MouseButton.PRIMARY) {
                 TableView<LabWorkWithKey> table = column.getTableView();
@@ -137,16 +153,11 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
     }
 
     private void applyFilters() {
-        if (columnFilters.isEmpty()) {
-            filteredData.setPredicate(p -> true);
-            return;
-        }
         filteredData.setPredicate(item -> {
-            for (Map.Entry<TableColumn<LabWorkWithKey, ?>, String> entry : columnFilters.entrySet()) {
-                TableColumn<LabWorkWithKey, ?> col = entry.getKey();
+            for (var entry : columnFilters.entrySet()) {
+                TableColumn<LabWorkWithKey, String> column = entry.getKey();
                 String filterText = entry.getValue();
-
-                Object cellData = col.getCellData(item);
+                Object cellData = column.getCellData(item);
                 if (cellData == null || !cellData.toString().toLowerCase().contains(filterText)) {
                     return false;
                 }
@@ -155,8 +166,8 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         });
     }
 
-    private void showFilterPopup(Node owner, Consumer<String> onFilterEntered) {
-        TextField filterField = new TextField();
+    private void showFilterPopup(Node owner, String currentFilter, Consumer<String> onFilterEntered) {
+        TextField filterField = new TextField(currentFilter);
         filterField.setPromptText("Введите фильтр...");
         VBox box = new VBox(filterField);
         box.setStyle("-fx-background-color: white; -fx-border-color: gray; -fx-padding: 5;");
@@ -173,5 +184,6 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         });
 
         filterField.requestFocus();
+        filterField.selectAll();
     }
 }
