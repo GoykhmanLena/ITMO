@@ -92,7 +92,8 @@ public class MemoryStorage {
         return map.get(key).compareTo(newLabWork) < 0;
     }
     public Long getId(String key){
-        return map.get(key).getId();
+        LabWork labWork = map.get(key);
+        return labWork != null? labWork.getId() : null;
     }
 
     public String getKeyByLabWorkId(Long id) {

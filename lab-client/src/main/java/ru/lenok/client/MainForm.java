@@ -8,16 +8,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import ru.lenok.common.CommandRequest;
-import ru.lenok.common.CommandResponse;
-import ru.lenok.common.CommandWithArgument;
-import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
@@ -27,7 +20,10 @@ public class MainForm {
     private final ClientService clientService = ClientService.getINSTANCE();
     private final ObservableList<LabWorkWithKey> labWorks = FXCollections.observableArrayList();
     private final FilteredList<LabWorkWithKey> filteredLabWorks = new FilteredList<>(labWorks, s -> true);
-    private Stage stage;
+    private final Stage stage;
+    private final BorderPane root = new BorderPane();
+    private final Scene scene = new Scene(root, 1200, 800);
+    private boolean initialized = false;
 
     public MainForm(List<LabWorkWithKey> labWorkList, Stage stage) {
         this.stage = stage;
@@ -40,7 +36,7 @@ public class MainForm {
         });
     }
 
-    public void notifyListChanged(List<LabWorkWithKey> list){
+    public void notifyListChanged(List<LabWorkWithKey> list) {
         Platform.runLater(() -> {
             labWorks.setAll(list);
             start();
@@ -48,9 +44,19 @@ public class MainForm {
     }
 
     public void start() {
-        BorderPane root = new BorderPane();
-        root.setPrefSize(1200, 800);
+        if (!initialized) {
+            stage.setScene(scene);
+            stage.setTitle("LabWork Manager");
+            stage.setMaximized(true);
+            stage.show();
+            initialized = true;
+        }
 
+        root.setTop(createTopBar());
+        root.setCenter(createSplitPane());
+    }
+
+    private HBox createTopBar() {
         HBox topBar = new HBox(10);
         topBar.setPadding(new Insets(10));
         topBar.setAlignment(Pos.TOP_RIGHT);
@@ -69,32 +75,58 @@ public class MainForm {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         topBar.getChildren().addAll(userLabel, spacer, langBox);
-        root.setTop(topBar);
+        return topBar;
+    }
 
+    private SplitPane createSplitPane() {
         SplitPane splitPane = new SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
 
         VBox leftPane = new VBox(10);
         leftPane.setPadding(new Insets(10));
-        leftPane.setVgrow(splitPane, Priority.ALWAYS);
 
-        //LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks, filteredLabWorks::setPredicate);
         LabWorkTableView tableView = new LabWorkTableView(filteredLabWorks);
+
         Button addButton = new Button("Add");
         addButton.setOnAction(e -> {
             LabWorkForm form = new LabWorkForm(null);
             form.showAndWait();
         });
 
-        leftPane.getChildren().addAll(tableView, addButton);
+        Button editButton = new Button("Edit");
+        editButton.setOnAction(e -> {
+            LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                LabWorkForm form = new LabWorkForm(selected);
+                form.showAndWait();
+            }
+        });
+
+        Button deleteButton = new Button("Delete");
+        deleteButton.setOnAction(e -> {
+            LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                Exception error = clientService.deleteLabWork(selected.getKey());
+                if (error != null) {
+                    new Alert(Alert.AlertType.ERROR, "Ошибка при удалении: " + error).showAndWait();
+                }
+            }
+        });
+
+        Button clearButton = new Button("Clear");
+        clearButton.setOnAction(e -> {
+            Exception error = clientService.clearLabWorks();
+            if (error != null) {
+                new Alert(Alert.AlertType.ERROR, "Ошибка при очистке: " + error).showAndWait();
+            }
+        });
+
+        HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton);
+        leftPane.getChildren().addAll(tableView, buttonBar);
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
         LabWorkCanvasPane labCanvas = new LabWorkCanvasPane(labWorks);
-        StackPane rightPane = new StackPane();
-        rightPane.getChildren().add(labCanvas);
-
-        splitPane.getItems().addAll(leftPane, rightPane);
-        root.setCenter(splitPane);
+        StackPane rightPane = new StackPane(labCanvas);
 
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) {
@@ -107,9 +139,7 @@ public class MainForm {
             tableView.scrollTo(labWork);
         });
 
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-        stage.setTitle("LabWork Manager");
-        stage.show();
+        splitPane.getItems().addAll(leftPane, rightPane);
+        return splitPane;
     }
 }

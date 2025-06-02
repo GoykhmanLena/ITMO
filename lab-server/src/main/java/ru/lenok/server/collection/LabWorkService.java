@@ -1,6 +1,8 @@
 package ru.lenok.server.collection;
 
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 import ru.lenok.server.daos.DBConnector;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Data
 public class LabWorkService {
+    private static final Logger logger = LoggerFactory.getLogger(LabWorkService.class);
+
     private MemoryStorage memoryStorage;
     private final LabWorkDAO labWorkDAO;
     private final Object monitor;
@@ -46,14 +50,20 @@ public class LabWorkService {
         }
     }
 
-    public String put(String key, LabWork lab) throws SQLException {
+    public String put(String key, LabWork labWork) throws SQLException {
         synchronized (monitor) {
-            if (memoryStorage.containsKey(key)) {
-                throw new IllegalArgumentException("Ошибка: элемент с таким ключом уже существует, ключ = " + key);
+            Long id = memoryStorage.getId(key);
+            if (id != null) {
+                logger.warn("Элемент с таким ключом уже существует, будет обновлено содержимое, id остается прежним, key = " + key  + ", id = " + id);
+                checkAccess(labWork.getOwnerId(), key);
+                labWork.setId(id);
+                updateByLabWorkId(id, labWork);
             }
-            Long elemId = labWorkDAO.insert(key, lab);
-            lab.setId(elemId);
-            memoryStorage.put(key, lab);
+            else {
+                Long elemId = labWorkDAO.insert(key, labWork);
+                labWork.setId(elemId);
+            }
+            memoryStorage.put(key, labWork);
             clientNotifier.accept(getLabWorkList());
             return "";
         }

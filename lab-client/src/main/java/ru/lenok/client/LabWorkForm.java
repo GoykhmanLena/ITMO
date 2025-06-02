@@ -60,6 +60,7 @@ public class LabWorkForm extends Stage {
         grid.add(coordGroup, 0, row++, 2, 1);
 
         datePicker = new DatePicker(existing == null ? LocalDate.now() : existing.getCreationDate().toLocalDate());
+        datePicker.getEditor().setDisable(true);
         Label dateLabel = new Label("Creation Date:");
         if (existing == null) {
             datePicker.setVisible(false);
@@ -226,8 +227,6 @@ public class LabWorkForm extends Stage {
                         ? LocalDateTime.now()
                         : datePicker.getValue().atStartOfDay();
 
-                Long ownerId = ClientService.getINSTANCE().getUser().getId();
-
                 LabWork lw = new LabWork.Builder()
                         .setName(name)
                         .setCoordinateX(finalX)
@@ -238,11 +237,10 @@ public class LabWorkForm extends Stage {
                         .setDifficulty(difficulty)
                         .setDisciplineName(discName)
                         .setDisciplinePracticeHours(finalHours)
-                        .setOwnerId(ownerId)
                         .build();
 
                 result = new LabWorkWithKey(key, lw);
-                CommandResponse insertResponse = ClientService.getINSTANCE().insertLabWork(result);
+                CommandResponse insertResponse = ClientService.getINSTANCE().createOrUpdateLabWork(result);
 
                 Platform.runLater(() -> {
                     if (insertResponse.getError() != null) {

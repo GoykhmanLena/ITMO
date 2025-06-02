@@ -4,7 +4,6 @@ import lombok.Data;
 import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.CommandWithArgument;
-import ru.lenok.common.auth.LoginResponse;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
 import ru.lenok.common.models.LabWorkWithKey;
@@ -53,7 +52,7 @@ public class ClientService {
         return notificationListener;
     }
 
-    public CommandResponse insertLabWork(LabWorkWithKey labWorkWithKey){
+    public CommandResponse createOrUpdateLabWork(LabWorkWithKey labWorkWithKey){
         CommandBehavior behavior = commandDefinitions.get("insert");
         CommandRequest showRequest = new CommandRequest(new CommandWithArgument("insert", behavior , labWorkWithKey.getKey(), null), labWorkWithKey, user, getServerNotificationPort());
         return getConnector().sendCommand(showRequest);
@@ -67,8 +66,22 @@ public class ClientService {
     }
 
     public CommandResponse getAllLabWorks() throws Exception {
-        CommandBehavior show = commandDefinitions.get("show");
-        CommandRequest showRequest = new CommandRequest(new CommandWithArgument("show", show, null, null), null, user, getServerNotificationPort());
-        return getConnector().sendCommand(showRequest);
+        CommandBehavior commandBehavior = commandDefinitions.get("show");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("show", commandBehavior, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(request);
+    }
+
+    public Exception deleteLabWork(String key) {
+        CommandBehavior commandBehavior = commandDefinitions.get("remove_key");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("remove_key", commandBehavior, key, null), null, user, getServerNotificationPort());
+        CommandResponse commandResponse = getConnector().sendCommand(request);
+        return commandResponse.getError();
+    }
+
+    public Exception clearLabWorks() {
+        CommandBehavior commandBehavior = commandDefinitions.get("clear");
+        CommandRequest showRequest = new CommandRequest(new CommandWithArgument("clear", commandBehavior, null, null), null, user, getServerNotificationPort());
+        CommandResponse commandResponse = getConnector().sendCommand(showRequest);
+        return commandResponse.getError();
     }
 }
