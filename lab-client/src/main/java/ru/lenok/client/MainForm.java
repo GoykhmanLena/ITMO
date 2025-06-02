@@ -64,7 +64,7 @@ public class MainForm {
 
         Label userLabel = new Label(languageManager.get("user_label") + ": " + clientService.getUser().getUsername());
         ComboBox<String> langBox = new ComboBox<>();
-        langBox.getItems().addAll("Русский", "Македонски", "Shqip", "English (NZ)");
+        langBox.getItems().addAll(languageManager.getAllLanguages());
         langBox.getSelectionModel().select(languageManager.getCurrentLanguageName());
 
         langBox.setOnAction(e -> {

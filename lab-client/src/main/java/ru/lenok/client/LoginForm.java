@@ -40,7 +40,7 @@ public class LoginForm {
         progressIndicator.setPrefSize(25, 25);
 
         ComboBox<String> langBox = new ComboBox<>();
-        langBox.getItems().addAll("Русский", "Македонски", "Shqip", "English (NZ)");
+        langBox.getItems().addAll(languageManager.getAllLanguages());
         langBox.getSelectionModel().select(languageManager.getCurrentLanguageName());
         langBox.setOnAction(e -> {
             languageManager.setLanguage(langBox.getSelectionModel().getSelectedItem());

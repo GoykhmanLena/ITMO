@@ -11,6 +11,7 @@ public class LanguageManager {
             "Shqip", new Locale("sq"),
             "English (NZ)", new Locale("en", "NZ")
     );
+
     private final Map<Locale, Map<String, String>> translations = new HashMap<>();
 
     private LanguageManager() {
@@ -236,12 +237,16 @@ public class LanguageManager {
                 .orElse("Русский");
     }
 
+    public Set<String> getAllLanguages() {
+        return locales.keySet();
+    }
+
     public String get(String key) {
         return translations.getOrDefault(current, translations.get(new Locale("ru"))).getOrDefault(key, key);
     }
 
     private void addLocale(String lang, Map<String, String> map) {
-        translations.put(new Locale(lang), map);
+        addLocale(new Locale(lang), map);
     }
 
     private void addLocale(Locale locale, Map<String, String> map) {
