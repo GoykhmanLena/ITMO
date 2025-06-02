@@ -15,16 +15,20 @@ import javafx.stage.Popup;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class LabWorkTableView extends TableView<LabWorkWithKey> {
     private final FilteredList<LabWorkWithKey> filteredData;
     private final SortedList<LabWorkWithKey> sortedData;
 
+    // Храним фильтры по столбцам
+    private final Map<TableColumn<LabWorkWithKey, ?>, String> columnFilters = new HashMap<>();
+
     public LabWorkTableView(ObservableList<LabWorkWithKey> data) {
         this.filteredData = new FilteredList<>(data, p -> true);
         this.sortedData = new SortedList<>(filteredData);
-        // Обязательный биндинг для сортировки
         this.sortedData.comparatorProperty().bind(this.comparatorProperty());
 
         setItems(sortedData);
@@ -76,20 +80,38 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
         filterButton.setOnAction(e -> showFilterPopup(filterButton, filterText -> {
-            filteredData.setPredicate(item -> {
-                Object cellData = column.getCellData(item);
-                return cellData != null && cellData.toString().toLowerCase().contains(filterText.toLowerCase());
-            });
+            if (filterText == null || filterText.isBlank()) {
+                columnFilters.remove(column);
+            } else {
+                columnFilters.put(column, filterText.toLowerCase());
+            }
+            applyFilters();
         }));
 
-        HBox headerBox = new HBox(label, filterButton);
-        headerBox.setSpacing(5);
-        HBox.setHgrow(label, Priority.ALWAYS);
+        Button clearFilterButton = new Button("✖"); // крестик сброса
+        clearFilterButton.setFocusTraversable(false);
+        clearFilterButton.setPadding(new Insets(0, 3, 0, 3));
+        clearFilterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        clearFilterButton.setOnAction(e -> {
+            columnFilters.remove(column);
+            applyFilters();
+        });
 
-        // Клик по заголовку (кроме лупы) — сортировка
+        // Контейнер для кнопок фильтра под заголовком
+        HBox buttonsBox = new HBox(filterButton, clearFilterButton);
+        buttonsBox.setSpacing(5);
+        buttonsBox.setPadding(new Insets(2, 0, 0, 0));
+        buttonsBox.setStyle("-fx-alignment: center;");
+
+        VBox headerBox = new VBox(label, buttonsBox);
+        headerBox.setSpacing(2);
+        headerBox.setPadding(new Insets(2, 0, 2, 0));
+        headerBox.setStyle("-fx-alignment: center;");
+
+        // Клик по заголовку (теперь по VBox), кроме кнопок
         headerBox.setOnMouseClicked(event -> {
-            if (event.getTarget() == filterButton) {
-                return; // клик по кнопке фильтра - не сортируем
+            if (event.getTarget() == filterButton || event.getTarget() == clearFilterButton) {
+                return; // клик по кнопкам фильтра не сортируем
             }
             if (event.getButton() == MouseButton.PRIMARY) {
                 TableView<LabWorkWithKey> table = column.getTableView();
@@ -112,6 +134,25 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         column.setGraphic(headerBox);
         getColumns().add(column);
+    }
+
+    private void applyFilters() {
+        if (columnFilters.isEmpty()) {
+            filteredData.setPredicate(p -> true);
+            return;
+        }
+        filteredData.setPredicate(item -> {
+            for (Map.Entry<TableColumn<LabWorkWithKey, ?>, String> entry : columnFilters.entrySet()) {
+                TableColumn<LabWorkWithKey, ?> col = entry.getKey();
+                String filterText = entry.getValue();
+
+                Object cellData = col.getCellData(item);
+                if (cellData == null || !cellData.toString().toLowerCase().contains(filterText)) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 
     private void showFilterPopup(Node owner, Consumer<String> onFilterEntered) {
