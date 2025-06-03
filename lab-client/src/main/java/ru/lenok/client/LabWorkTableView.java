@@ -13,8 +13,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import ru.lenok.common.models.LabWorkWithKey;
 
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -23,7 +26,20 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
     private final FilteredList<LabWorkWithKey> filteredData;
     private final SortedList<LabWorkWithKey> sortedData;
 
-    // Хранение фильтров по колонкам
+    private final Locale defaultLocale = Locale.getDefault();
+
+    // Настройка форматирования с учетом локали
+    private final DateTimeFormatter dateFormatter =
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(defaultLocale);
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance(defaultLocale);
+    private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
+
+    {
+        // Можно настроить минимальное количество знаков после запятой
+        numberFormat.setMinimumFractionDigits(0);
+        numberFormat.setMaximumFractionDigits(3);
+    }
+
     private final Map<TableColumn<LabWorkWithKey, String>, String> columnFilters = new HashMap<>();
 
     public LabWorkTableView(ObservableList<LabWorkWithKey> data) {
@@ -37,21 +53,21 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         getColumns().clear();
 
         addFilterableColumn(languageManager.get("label.key"), c -> c.getValue().getKey());
-        addFilterableColumn("ID", c -> String.valueOf(c.getValue().getId()));
+        addFilterableColumn("ID", c -> integerFormat.format(c.getValue().getId()));
         addFilterableColumn(languageManager.get("label.name"), c -> c.getValue().getName());
         addFilterableColumn(languageManager.get("title.coordinates"), c -> {
             var coords = c.getValue().getCoordinates();
-            return "(" + coords.getX() + ", " + coords.getY() + ")";
+            return "(" + numberFormat.format(coords.getX()) + " ; " + numberFormat.format(coords.getY()) + ")";
         });
-        addFilterableColumn(languageManager.get("label.creation_date"), c -> c.getValue().getCreationDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        addFilterableColumn(languageManager.get("label.minimal_point"), c -> String.valueOf(c.getValue().getMinimalPoint()));
+        addFilterableColumn(languageManager.get("label.creation_date"), c -> c.getValue().getCreationDate().format(dateFormatter));
+        addFilterableColumn(languageManager.get("label.minimal_point"), c -> numberFormat.format(c.getValue().getMinimalPoint()));
         addFilterableColumn(languageManager.get("label.description"), c -> c.getValue().getDescription());
         addFilterableColumn(languageManager.get("label.difficulty"), c -> c.getValue().getDifficulty().name());
-        addFilterableColumn(languageManager.get("label.discipline"), c -> {
+        addFilterableColumn(languageManager.get("title.discipline"), c -> {
             var d = c.getValue().getDiscipline();
-            return d.getName() + " (" + d.getPracticeHours() + " ч)";
+            return d.getName() + " (" + integerFormat.format(d.getPracticeHours()) + languageManager.get("label.hour")+ ")";
         });
-        addFilterableColumn(languageManager.get("label.owner_id"), c -> String.valueOf(c.getValue().getOwnerId()));
+        addFilterableColumn(languageManager.get("label.owner_id"), c -> integerFormat.format(c.getValue().getOwnerId()));
     }
 
     private void addFilterableColumn(String title,
@@ -63,17 +79,16 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         Label label = new Label(title);
 
-        Button filterButton = new Button("\uD83D\uDD0D"); // лупа
+        Button filterButton = new Button("\uD83D\uDD0D");
         filterButton.setFocusTraversable(false);
         filterButton.setPadding(new Insets(0, 3, 0, 3));
         filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        Button clearFilterButton = new Button("✖"); // крестик сброса
+        Button clearFilterButton = new Button("✖");
         clearFilterButton.setFocusTraversable(false);
         clearFilterButton.setPadding(new Insets(0, 3, 0, 3));
         clearFilterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        // Метод для обновления стиля лупы в зависимости от наличия фильтра
         Runnable updateFilterButtonStyle = () -> {
             String filter = columnFilters.get(column);
             if (filter != null && !filter.isBlank()) {
@@ -170,6 +185,13 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         filterField.setOnAction(e -> {
             popup.hide();
             onFilterEntered.accept(filterField.getText());
+        });
+
+        filterField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (!isNowFocused) {
+                popup.hide();
+                onFilterEntered.accept(filterField.getText());
+            }
         });
 
         filterField.requestFocus();

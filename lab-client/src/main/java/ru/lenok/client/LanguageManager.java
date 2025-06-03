@@ -4,17 +4,18 @@ import java.util.*;
 
 public class LanguageManager {
     private static final LanguageManager INSTANCE = new LanguageManager();
-    private Locale current = new Locale("ru");
-    private final Map<String, Locale> locales = Map.of(
-            "Русский", new Locale("ru"),
-            "Македонски", new Locale("mk"),
-            "Shqip", new Locale("sq"),
-            "English (NZ)", new Locale("en", "NZ")
-    );
+    private Locale current;
+    Map<String, Locale> locales = Collections.unmodifiableMap(new LinkedHashMap<>() {{
+        put("Русский", new Locale("ru"));
+        put("English (NZ)", new Locale("en", "NZ"));
+        put("Македонски", new Locale("mk"));
+        put("Shqip", new Locale("sq"));
+    }});
 
     private final Map<Locale, Map<String, String>> translations = new HashMap<>();
 
     private LanguageManager() {
+        setLanguage("Русский");
         addLocale("ru", Map.ofEntries(
                 Map.entry("title.main", "Менеджер LabWork"),
                 Map.entry("title.login", "Вход / Регистрация"),
@@ -27,6 +28,7 @@ public class LanguageManager {
                 Map.entry("title.create_labwork", "Создание LabWork"),
                 Map.entry("title.edit_labwork", "Редактирование LabWork"),
 
+                Map.entry("label.hour", "ч"),
                 Map.entry("label.key", "Ключ"),
                 Map.entry("label.name", "Имя"),
                 Map.entry("title.coordinates", "Координаты"),
@@ -81,6 +83,7 @@ public class LanguageManager {
                 Map.entry("title.create_labwork", "Create LabWork"),
                 Map.entry("title.edit_labwork", "Edit LabWork"),
 
+                Map.entry("label.hour", "h"),
                 Map.entry("label.key", "Key"),
                 Map.entry("label.name", "Name"),
                 Map.entry("title.coordinates", "Coordinates"),
@@ -135,6 +138,7 @@ public class LanguageManager {
                 Map.entry("title.create_labwork", "Креирај LabWork"),
                 Map.entry("title.edit_labwork", "Уреди LabWork"),
 
+                Map.entry("label.hour", "ч"),
                 Map.entry("label.key", "Клуч"),
                 Map.entry("label.name", "Име"),
                 Map.entry("title.coordinates", "Координати"),
@@ -189,6 +193,7 @@ public class LanguageManager {
                 Map.entry("title.create_labwork", "Krijo LabWork"),
                 Map.entry("title.edit_labwork", "Ndrysho LabWork"),
 
+                Map.entry("label.hour", "or"),
                 Map.entry("label.key", "Çelësi"),
                 Map.entry("label.name", "Emri"),
                 Map.entry("title.coordinates", "Koordinatat"),

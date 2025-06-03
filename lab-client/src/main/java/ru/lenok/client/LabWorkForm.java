@@ -54,6 +54,9 @@ public class LabWorkForm extends Stage {
         int row = 0;
 
         TextField keyField = new TextField();
+        if (existing != null) {
+            keyField.setDisable(true);
+        }
         grid.add(new Label(languageManager.get("label.key")), 0, row);
         grid.add(keyField, 1, row++);
 

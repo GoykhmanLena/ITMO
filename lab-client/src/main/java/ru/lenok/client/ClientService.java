@@ -84,4 +84,16 @@ public class ClientService {
         CommandResponse commandResponse = getConnector().sendCommand(showRequest);
         return commandResponse.getError();
     }
+
+    public CommandResponse getHelp() throws Exception {
+        CommandBehavior commandBehavior = commandDefinitions.get("help");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("help", commandBehavior, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(request);
+    }
+
+    public CommandResponse getHistory() throws Exception {
+        CommandBehavior commandBehavior = commandDefinitions.get("history");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("history", commandBehavior, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(request);
+    }
 }

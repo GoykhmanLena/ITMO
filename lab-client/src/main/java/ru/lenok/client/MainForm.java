@@ -45,15 +45,27 @@ public class MainForm {
 
     public void start() {
         stage.setTitle(languageManager.get("title.main"));
+        double[] oldPositions = null;
         if (!initialized) {
             stage.setScene(scene);
             stage.setMaximized(true);
             stage.show();
             initialized = true;
         }
+        else {
+            SplitPane oldSplitPane = (SplitPane) root.getCenter();
+            if (oldSplitPane != null) {
+                oldPositions = oldSplitPane.getDividerPositions();
+            }
+        }
 
         root.setTop(createTopBar());
         root.setCenter(createSplitPane());
+
+
+        if (oldPositions != null) {
+            ((SplitPane) root.getCenter()).setDividerPositions(oldPositions);
+        }
     }
 
     private HBox createTopBar() {
