@@ -17,7 +17,11 @@ import javafx.util.Duration;
 import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -30,27 +34,17 @@ public class LabWorkCanvasPane extends Pane {
     private LabWorkWithKey selectedLabWork;
     private Consumer<LabWorkWithKey> onLabWorkSelected;
 
+    private final Locale defaultLocale = Locale.getDefault();
+
+    private final DateTimeFormatter dateFormatter =
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(defaultLocale);
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance(defaultLocale);
+    private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
+
     public LabWorkCanvasPane(ObservableList<LabWorkWithKey> labWorks) {
         this.labWorks = labWorks;
-
-        labWorks.addListener((ListChangeListener<LabWorkWithKey>) change -> {
-            while (change.next()) {
-                if (change.wasAdded()) {
-                    for (LabWorkWithKey lw : change.getAddedSubList()) {
-                        addWithAnimation(lw);
-                    }
-                }
-                if (change.wasRemoved()) {
-                    for (LabWorkWithKey lw : change.getRemoved()) {
-                        removeObject(lw);
-                    }
-                }
-            }
-        });
-
         widthProperty().addListener(observable -> redrawAll());
         heightProperty().addListener(observable -> redrawAll());
-
         redrawAll();
     }
 
@@ -177,11 +171,6 @@ public class LabWorkCanvasPane extends Pane {
         tt.play();
     }
 
-    private void removeObject(LabWorkWithKey lw) {
-        Group group = visualized.remove(lw);
-        if (group != null) getChildren().remove(group);
-    }
-
     private void redrawAll() {
         getChildren().clear();
         visualized.clear();
@@ -203,14 +192,41 @@ public class LabWorkCanvasPane extends Pane {
     }
 
     private String buildTooltipText(LabWork lw) {
+        LanguageManager lm = LanguageManager.getInstance();
+        Locale locale = Locale.getDefault();
+        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
+
         StringBuilder sb = new StringBuilder();
-        sb.append("id = ").append(lw.getId()).append("\n");
-        sb.append("name = ").append(lw.getName()).append("\n");
-        sb.append("coordinates = ").append(lw.getCoordinates()).append("\n");
-        sb.append("creationDate = ").append(lw.getCreationDate()).append("\n");
-        sb.append("minimalPoint = ").append(lw.getMinimalPoint()).append("\n");
-        sb.append("difficulty = ").append(lw.getDifficulty()).append("\n");
-        sb.append("discipline = ").append(lw.getDiscipline()).append("\n");
+
+        sb.append("ID: ").append(lw.getId()).append("\n");
+        sb.append(lm.get("label.name")).append(": ").append(lw.getName()).append("\n");
+
+        sb.append(lm.get("title.coordinates")).append(": ")
+                .append(lm.get("label.x")).append(" = ").append(numberFormat.format(lw.getCoordinates().getX()))
+                .append(", ")
+                .append(lm.get("label.y")).append(" = ").append(numberFormat.format(lw.getCoordinates().getY()))
+                .append("\n");
+
+        sb.append(lm.get("label.creation_date")).append(": ")
+                .append(lw.getCreationDate().toLocalDate().format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale)))
+                .append("\n");
+
+        sb.append(lm.get("label.minimal_point")).append(": ").append(numberFormat.format(lw.getMinimalPoint())).append("\n");
+
+        sb.append(lm.get("label.description")).append(": ").append(lw.getDescription()).append("\n");
+
+        sb.append(lm.get("label.difficulty")).append(": ").append(lw.getDifficulty()).append("\n");
+
+        if (lw.getDiscipline() != null) {
+            sb.append(lm.get("title.discipline")).append(": ")
+                    .append(lm.get("label.discipline_name")).append(" = ").append(lw.getDiscipline().getName())
+                    .append(", ")
+                    .append(lm.get("label.practice_hours")).append(" = ").append(integerFormat.format(lw.getDiscipline().getPracticeHours()))
+                    .append("\n");
+        }
+
         return sb.toString();
     }
+
 }
