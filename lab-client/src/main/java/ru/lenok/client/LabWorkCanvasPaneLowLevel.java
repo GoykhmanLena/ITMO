@@ -10,31 +10,50 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Popup;
+import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.Consumer;
 
 public class LabWorkCanvasPaneLowLevel extends Pane {
+    private LanguageManager lm = LanguageManager.getInstance();
     private final ObservableList<LabWorkWithKey> labWorks;
     private final Map<Long, Color> ownerColorMap = new HashMap<>();
     private final Map<LabWorkWithKey, double[]> positions = new HashMap<>();
     private final Map<LabWorkWithKey, double[]> velocities = new HashMap<>();
     private final Random rand = new Random();
 
+    private final Locale defaultLocale = Locale.getDefault();
+    private final NumberFormat numberFormat = NumberFormat.getNumberInstance(defaultLocale);
+    private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
+    Locale locale = Locale.getDefault();
+
+
     private LabWorkWithKey selectedLabWork;
     private LabWorkWithKey hoveredLabWork;
 
     private Consumer<LabWorkWithKey> onLabWorkSelected;
 
-    private final NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.getDefault());
 
-    private  Canvas canvas;
+    private Canvas canvas;
 
-    // Popup для кастомного Tooltip
     private final Popup tooltipPopup = new Popup();
     private final Label tooltipLabel = new Label();
+
+    private AnimationTimer animationTimer;
+
+    private long animationStartTime = 0;
+
+    // Для плавного перехода к целевым координатам
+    private boolean isTransitioningToTargets = false;
+    private final Map<LabWorkWithKey, double[]> targetPositions = new HashMap<>();
+    private final double transitionDurationSeconds = 2.0;
+    private long transitionStartTime = 0;
 
     public LabWorkCanvasPaneLowLevel(ObservableList<LabWorkWithKey> labWorks) {
         this.labWorks = labWorks;
@@ -45,12 +64,26 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         tooltipPopup.getContent().add(tooltipLabel);
         tooltipPopup.setAutoHide(true);
 
-        widthProperty().addListener(observable -> resizeCanvas());
-        heightProperty().addListener(observable -> resizeCanvas());
+        widthProperty().addListener(observable -> {
+            resizeCanvas();
+            if (!positions.isEmpty()) {
+                updateTargetPositions(); // при изменении размера пересчитаем целевые позиции
+            }
+        });
+        heightProperty().addListener(observable -> {
+            resizeCanvas();
+            if (!positions.isEmpty()) {
+                updateTargetPositions();
+            }
+        });
 
-        labWorks.addListener((InvalidationListener) obs -> initializePositionsAndRedraw());
+        labWorks.addListener((InvalidationListener) obs -> {
+            initializePositionsAndRedraw();
+            updateTargetPositions();
+        });
 
         initializePositionsAndRedraw();
+        updateTargetPositions();
         startAnimation();
         setupMouseHandling();
     }
@@ -77,16 +110,86 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         redraw();
     }
 
+    private void updateTargetPositions() {
+        targetPositions.clear();
+        double width = getWidth();
+        double height = getHeight();
+
+        if (width == 0 || height == 0) return; // Защита от деления на 0
+
+        // Нужно понять диапазон координат LabWork, чтобы масштабировать
+        double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+
+        for (LabWorkWithKey lw : labWorks) {
+            double x = lw.getCoordinates().getX();
+            double y = lw.getCoordinates().getY();
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        // Защита если все координаты одинаковы
+        if (minX == maxX) {
+            minX -= 1;
+            maxX += 1;
+        }
+        if (minY == maxY) {
+            minY -= 1;
+            maxY += 1;
+        }
+
+        double margin = 20; // отступы от краев
+        for (LabWorkWithKey lw : labWorks) {
+            double x = lw.getCoordinates().getX();
+            double y = lw.getCoordinates().getY();
+
+            // масштабируем в экранные координаты
+            double scaledX = margin + (x - minX) / (maxX - minX) * (width - 2 * margin);
+            double scaledY = margin + (y - minY) / (maxY - minY) * (height - 2 * margin);
+
+            targetPositions.put(lw, new double[]{scaledX, scaledY});
+        }
+    }
+
     private double randVel() {
-        return rand.nextDouble() * 200 - 100;
+        return rand.nextDouble() * 1000;
     }
 
     private void startAnimation() {
-        new AnimationTimer() {
+        animationTimer = new AnimationTimer() {
             long lastUpdate = 0;
 
             @Override
             public void handle(long now) {
+                if (animationStartTime == 0) {
+                    animationStartTime = now; // старт стартовой анимации
+                }
+
+                // Если сейчас идет переход к целевым позициям — запускаем transitionStep()
+                if (isTransitioningToTargets) {
+                    if (lastUpdate == 0) {
+                        lastUpdate = now;
+                        return;
+                    }
+                    double dt = (now - lastUpdate) / 1_000_000_000.0;
+                    lastUpdate = now;
+
+                    transitionStep(now);
+                    redraw();
+                    return;
+                }
+
+                // Если прошло 3 секунды стартовой анимации — переходим к анимации перехода
+                if (now - animationStartTime > 3_000_000_000L) {
+                    // Стартуем плавный переход к реальным координатам
+                    isTransitioningToTargets = true;
+                    transitionStartTime = now;
+                    lastUpdate = now;
+                    return;
+                }
+
                 if (lastUpdate == 0) {
                     lastUpdate = now;
                     return;
@@ -97,7 +200,36 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
                 updatePositions(dt);
                 redraw();
             }
-        }.start();
+        };
+        animationTimer.start();
+    }
+
+    private void transitionStep(long now) {
+        double elapsedSeconds = (now - transitionStartTime) / 1_000_000_000.0;
+        double t = Math.min(elapsedSeconds / transitionDurationSeconds, 1.0);
+
+        // Интерполируем позиции кружков от текущих к targetPositions по t
+        for (LabWorkWithKey lw : labWorks) {
+            double[] currentPos = positions.get(lw);
+            double[] targetPos = targetPositions.get(lw);
+            if (targetPos == null || currentPos == null) continue;
+
+            // Линейная интерполяция: pos = current*(1-t) + target*t
+            double newX = currentPos[0] * (1 - t) + targetPos[0] * t;
+            double newY = currentPos[1] * (1 - t) + targetPos[1] * t;
+
+            positions.put(lw, new double[]{newX, newY});
+        }
+
+        if (t >= 1.0) {
+            // Переход завершен
+            isTransitioningToTargets = false;
+            // Обнулим скорости, чтобы кружки стояли
+            velocities.clear();
+            for (LabWorkWithKey lw : labWorks) {
+                velocities.put(lw, new double[]{0, 0});
+            }
+        }
     }
 
     private void updatePositions(double dt) {
@@ -107,6 +239,8 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         for (LabWorkWithKey lw : labWorks) {
             double[] pos = positions.get(lw);
             double[] vel = velocities.get(lw);
+            if (pos == null || vel == null) continue;
+
             double radius = getRadius(lw);
 
             pos[0] += vel[0] * dt;
@@ -126,6 +260,8 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
 
         for (LabWorkWithKey lw : labWorks) {
             double[] pos = positions.get(lw);
+            if (pos == null) continue;
+
             double radius = getRadius(lw);
             Color color = getColorForOwner(lw.getOwnerId());
 
@@ -165,7 +301,6 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
                     return;
                 }
             }
-            // Клик вне кружков снимает выделение
             selectedLabWork = null;
             redraw();
         });
@@ -204,10 +339,11 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
     }
 
     private void showTooltip(LabWorkWithKey lw, double screenX, double screenY) {
-        String text = buildTooltipText(lw);
-        tooltipLabel.setText(text);
+        String tooltipText = buildTooltipText(lw);
+
+        tooltipLabel.setText(tooltipText);
         if (!tooltipPopup.isShowing()) {
-            tooltipPopup.show(getScene().getWindow(), screenX + 10, screenY + 10);
+            tooltipPopup.show(canvas, screenX + 10, screenY + 10);
         } else {
             tooltipPopup.setX(screenX + 10);
             tooltipPopup.setY(screenY + 10);
@@ -215,25 +351,53 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
     }
 
     private void hideTooltip() {
-        if (tooltipPopup.isShowing()) {
-            tooltipPopup.hide();
-        }
+        tooltipPopup.hide();
     }
 
-    private String buildTooltipText(LabWorkWithKey lw) {
-        return "LabWork ID: " + lw.getKey() + "\n" +
-                "Owner ID: " + lw.getOwnerId() + "\n" +
-                "Name: " + lw.getName() + "\n" +
-                "Min Points: " + numberFormat.format(lw.getMinimalPoint());
+    private Color getColorForOwner(long ownerId) {
+        return ownerColorMap.computeIfAbsent(ownerId, k -> Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
     }
 
     private double getRadius(LabWorkWithKey lw) {
-        // Минимальный радиус и масштаб по минимальным баллам
-        return Math.max(lw.getMinimalPoint() / 2.0, 10);
+        return lw.getMinimalPoint()/2;
     }
 
-    private Color getColorForOwner(Long ownerId) {
-        return ownerColorMap.computeIfAbsent(ownerId, id ->
-                Color.hsb(rand.nextDouble() * 360, 0.7, 0.9));
+    public void highlight(LabWorkWithKey lw) {
+        selectedLabWork = lw;
+        redraw();
     }
+
+    private String buildTooltipText(LabWork lw) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("ID: ").append(lw.getId()).append("\n");
+        sb.append(lm.get("label.name")).append(": ").append(lw.getName()).append("\n");
+
+        sb.append(lm.get("title.coordinates")).append(": ")
+                .append(lm.get("label.x")).append(" = ").append(numberFormat.format(lw.getCoordinates().getX()))
+                .append(", ")
+                .append(lm.get("label.y")).append(" = ").append(numberFormat.format(lw.getCoordinates().getY()))
+                .append("\n");
+
+        sb.append(lm.get("label.creation_date")).append(": ")
+                .append(lw.getCreationDate().toLocalDate().format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM).withLocale(locale)))
+                .append("\n");
+
+        sb.append(lm.get("label.minimal_point")).append(": ").append(numberFormat.format(lw.getMinimalPoint())).append("\n");
+
+        sb.append(lm.get("label.description")).append(": ").append(lw.getDescription()).append("\n");
+
+        sb.append(lm.get("label.difficulty")).append(": ").append(lw.getDifficulty()).append("\n");
+
+        if (lw.getDiscipline() != null) {
+            sb.append(lm.get("title.discipline")).append(": ")
+                    .append(lm.get("label.discipline_name")).append(" = ").append(lw.getDiscipline().getName())
+                    .append(", ")
+                    .append(lm.get("label.practice_hours")).append(" = ").append(integerFormat.format(lw.getDiscipline().getPracticeHours()))
+                    .append("\n");
+        }
+
+        return sb.toString();
+    }
+
 }

@@ -219,14 +219,13 @@ public class MainForm {
 
         leftPane.getChildren().addAll(tableView, buttonBar);
         VBox.setVgrow(tableView, Priority.ALWAYS);
-
         //LabWorkCanvasPane labCanvas = new LabWorkCanvasPane(labWorks);
         LabWorkCanvasPaneLowLevel labCanvas = new LabWorkCanvasPaneLowLevel(labWorks);
         StackPane rightPane = new StackPane(labCanvas);
 
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) {
-                //labCanvas.highlight(selected);
+                labCanvas.highlight(selected);
                 deleteButton.setDisable(false);
                 editButton.setDisable(false);
             }
