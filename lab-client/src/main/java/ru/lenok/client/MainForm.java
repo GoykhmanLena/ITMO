@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import ru.lenok.common.CommandResponse;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
@@ -61,7 +63,6 @@ public class MainForm {
 
         root.setTop(createTopBar());
         root.setCenter(createSplitPane());
-
 
         if (oldPositions != null) {
             ((SplitPane) root.getCenter()).setDividerPositions(oldPositions);
@@ -115,25 +116,66 @@ public class MainForm {
         });
 
         Button deleteButton = new Button(languageManager.get("button.delete"));
-        deleteButton.setOnAction(e -> {
+        Button clearButton = new Button(languageManager.get("button.clear"));
+        Button historyButton = new Button(languageManager.get("button.history"));
+        Button helpButton = new Button(languageManager.get("button.help"));
+
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setVisible(false);
+        progressIndicator.setPrefSize(24, 24);
+
+        deleteButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
             LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 Exception error = clientService.deleteLabWork(selected.getKey());
                 if (error != null) {
-                    new Alert(Alert.AlertType.ERROR, languageManager.get("error.delete") + ": " + error).showAndWait();
+                    Platform.runLater(() -> new Alert(Alert.AlertType.ERROR,
+                            languageManager.get("error.delete") + ": " + error).showAndWait());
                 }
             }
-        });
+        }));
 
-        Button clearButton = new Button(languageManager.get("button.clear"));
-        clearButton.setOnAction(e -> {
+        clearButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
             Exception error = clientService.clearLabWorks();
             if (error != null) {
-                new Alert(Alert.AlertType.ERROR, languageManager.get("error.clear") + ": " + error).showAndWait();
+                Platform.runLater(() -> new Alert(Alert.AlertType.ERROR,
+                        languageManager.get("error.clear") + ": " + error).showAndWait());
             }
-        });
+        }));
 
-        HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton);
+        historyButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
+            CommandResponse response = clientService.getHistory();
+            Platform.runLater(() -> {
+                if (response.getError() == null) {
+                    showListDialog(languageManager.get("history.title"), response.getOutput());
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(languageManager.get("history.title"));
+                    alert.setHeaderText(null);
+                    alert.setContentText(response.getError().toString());
+                    alert.showAndWait();
+                }
+            });
+        }));
+
+        helpButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
+            CommandResponse response = clientService.getHelp();
+            Platform.runLater(() -> {
+                if (response.getError() == null) {
+                    showListDialog(languageManager.get("help.title"), response.getOutput());
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(languageManager.get("help.title"));
+                    alert.setHeaderText(null);
+                    alert.setContentText(response.getError().toString());
+                    alert.showAndWait();
+                }
+            });
+        }));
+
+        HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton, historyButton, helpButton, progressIndicator);
+        buttonBar.setAlignment(Pos.CENTER_LEFT);
+
         leftPane.getChildren().addAll(tableView, buttonBar);
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
@@ -153,5 +195,43 @@ public class MainForm {
 
         splitPane.getItems().addAll(leftPane, rightPane);
         return splitPane;
+    }
+
+    private void runAsyncWithProgress(ProgressIndicator progressIndicator, Runnable taskBody) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                taskBody.run();
+                return null;
+            }
+        };
+
+        task.setOnRunning(e -> progressIndicator.setVisible(true));
+        task.setOnSucceeded(e -> progressIndicator.setVisible(false));
+        task.setOnFailed(e -> {
+            progressIndicator.setVisible(false);
+            Throwable ex = task.getException();
+            Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Error: " + ex).showAndWait());
+        });
+
+        new Thread(task).start();
+    }
+
+    private void showListDialog(String title, String multilineText) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+
+        ListView<String> listView = new ListView<>();
+        String[] lines = multilineText.split("\\R");
+        listView.getItems().addAll(lines);
+        listView.setPrefSize(600, 400);
+
+        // Put ListView inside a VBox with padding
+        VBox content = new VBox(listView);
+        content.setPadding(new Insets(10));
+
+        alert.getDialogPane().setContent(content);
+        alert.showAndWait();
     }
 }

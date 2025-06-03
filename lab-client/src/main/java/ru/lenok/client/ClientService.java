@@ -85,15 +85,28 @@ public class ClientService {
         return commandResponse.getError();
     }
 
-    public CommandResponse getHelp() throws Exception {
+    public CommandResponse getHelp()  {
         CommandBehavior commandBehavior = commandDefinitions.get("help");
         CommandRequest request = new CommandRequest(new CommandWithArgument("help", commandBehavior, null, null), null, user, getServerNotificationPort());
         return getConnector().sendCommand(request);
     }
 
-    public CommandResponse getHistory() throws Exception {
+    public CommandResponse getHistory()  {
         CommandBehavior commandBehavior = commandDefinitions.get("history");
         CommandRequest request = new CommandRequest(new CommandWithArgument("history", commandBehavior, null, null), null, user, getServerNotificationPort());
         return getConnector().sendCommand(request);
     }
+
+    public CommandResponse getInfo()  {
+        CommandBehavior commandBehavior = commandDefinitions.get("info");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("info", commandBehavior, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(request);
+    }
+
+    public CommandResponse executeScript()  {
+        CommandBehavior commandBehavior = commandDefinitions.get("execute_script");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("execute_script", commandBehavior, null, null), null, user, getServerNotificationPort());
+        return getConnector().sendCommand(request);
+    }
+
 }
