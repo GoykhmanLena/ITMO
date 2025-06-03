@@ -2,7 +2,6 @@ package ru.lenok.client;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.TranslateTransition;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.control.Tooltip;
@@ -18,8 +17,6 @@ import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.text.NumberFormat;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -27,6 +24,7 @@ import java.util.Random;
 import java.util.function.Consumer;
 
 public class LabWorkCanvasPane extends Pane {
+    private LanguageManager lm = LanguageManager.getInstance();
     private final ObservableList<LabWorkWithKey> labWorks;
     private final Map<Long, Color> ownerColorMap = new HashMap<>();
     private final Map<LabWorkWithKey, Group> visualized = new HashMap<>();
@@ -35,11 +33,9 @@ public class LabWorkCanvasPane extends Pane {
     private Consumer<LabWorkWithKey> onLabWorkSelected;
 
     private final Locale defaultLocale = Locale.getDefault();
-
-    private final DateTimeFormatter dateFormatter =
-            DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(defaultLocale);
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(defaultLocale);
     private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
+    Locale locale = Locale.getDefault();
 
     public LabWorkCanvasPane(ObservableList<LabWorkWithKey> labWorks) {
         this.labWorks = labWorks;
@@ -90,8 +86,10 @@ public class LabWorkCanvasPane extends Pane {
         getChildren().add(group);
         visualized.put(lw, group);
 
-        // Tooltip с информацией
         Tooltip tooltip = new Tooltip(buildTooltipText(lw));
+        tooltip.setShowDelay(Duration.millis(200));
+        tooltip.setShowDuration(Duration.minutes(1));
+        tooltip.setHideDelay(Duration.millis(200));
         Tooltip.install(group, tooltip);
 
         double[] velocity = {(rand.nextDouble() * 200 - 100) * 10, (rand.nextDouble() * 200 - 100) * 10};
@@ -192,11 +190,6 @@ public class LabWorkCanvasPane extends Pane {
     }
 
     private String buildTooltipText(LabWork lw) {
-        LanguageManager lm = LanguageManager.getInstance();
-        Locale locale = Locale.getDefault();
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
-
         StringBuilder sb = new StringBuilder();
 
         sb.append("ID: ").append(lw.getId()).append("\n");
@@ -228,5 +221,4 @@ public class LabWorkCanvasPane extends Pane {
 
         return sb.toString();
     }
-
 }
