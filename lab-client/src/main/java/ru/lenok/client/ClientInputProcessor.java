@@ -13,13 +13,13 @@ import ru.lenok.common.LabWorkItemAssembler;
 import ru.lenok.common.auth.User;
 import ru.lenok.common.commands.CommandBehavior;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Stack;
 
 import static ru.lenok.common.commands.ArgType.LONG;
 
 @Data
-
 public class ClientInputProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ClientInputProcessor.class);
     public static final String EXECUTE_SCRIPT_NAME = "execute_script";
@@ -76,7 +76,7 @@ public class ClientInputProcessor {
         }
     }
 
-    private void sendAndProcessRequest(CommandWithArgument commandWithArgument, LabWorkItemAssembler labWorkItemAssembler) throws Exception {
+    private void sendAndProcessRequest(CommandWithArgument commandWithArgument, LabWorkItemAssembler labWorkItemAssembler) throws RuntimeException {
         CommandBehavior commandBehavior = commandWithArgument.getCommandBehavior();
         String commandName = commandWithArgument.getCommandName();
         if(commandBehavior.hasElement()){
@@ -99,11 +99,12 @@ public class ClientInputProcessor {
         processResponse(commandResponse);
     }
 
-    private void runExecuteScript(CommandRequest commandRequest) throws Exception {
+    public void runExecuteScript(CommandRequest commandRequest) throws RuntimeException {
         try {
             executeScriptCommand.execute(commandRequest.getCommandWithArgument().getArgument1());
-        } catch (Exception e) {
-            logger.error("Произошла ошибка при выполнении скрипта", e);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -34,7 +34,7 @@ public class ExecuteScriptCommand extends AbstractCommand {
         try (AbstractInput fileInput = new FileInput(file)) {
             inputProcessor.processInput(fileInput, false);
         } catch (IOException e) {
-            throw new IOException("Ошибка при чтении файла, проверьте что он существует");
+            throw new RuntimeException("Ошибка при чтении файла, проверьте что он существует");
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {

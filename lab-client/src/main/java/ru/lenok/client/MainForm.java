@@ -11,10 +11,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.models.LabWorkWithKey;
 
+import java.io.File;
 import java.util.List;
 
 public class MainForm {
@@ -26,6 +28,8 @@ public class MainForm {
     private final BorderPane root = new BorderPane();
     private final Scene scene = new Scene(root, 1200, 800);
     private boolean initialized = false;
+    private Button editButton;
+    private Button deleteButton;
 
     public MainForm(List<LabWorkWithKey> labWorkList, Stage stage) {
         this.stage = stage;
@@ -106,7 +110,7 @@ public class MainForm {
             form.showAndWait();
         });
 
-        Button editButton = new Button(languageManager.get("button.edit"));
+        editButton = new Button(languageManager.get("button.edit"));
         editButton.setOnAction(e -> {
             LabWorkWithKey selected = tableView.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -115,11 +119,12 @@ public class MainForm {
             }
         });
 
-        Button deleteButton = new Button(languageManager.get("button.delete"));
+        deleteButton = new Button(languageManager.get("button.delete"));
         Button clearButton = new Button(languageManager.get("button.clear"));
         Button historyButton = new Button(languageManager.get("button.history"));
         Button helpButton = new Button(languageManager.get("button.help"));
-
+        deleteButton.setDisable(true);
+        editButton.setDisable(true);
         // New buttons
         Button infoButton = new Button(languageManager.get("button.info"));
         Button scriptButton = new Button(languageManager.get("button.script"));
@@ -151,10 +156,10 @@ public class MainForm {
             CommandResponse response = clientService.getHistory();
             Platform.runLater(() -> {
                 if (response.getError() == null) {
-                    showListDialog(languageManager.get("history.title"), response.getOutput());
+                    showListDialog(languageManager.get("button.history"), response.getOutput());
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(languageManager.get("history.title"));
+                    alert.setTitle(languageManager.get("button.history"));
                     alert.setHeaderText(null);
                     alert.setContentText(response.getError().toString());
                     alert.showAndWait();
@@ -166,10 +171,10 @@ public class MainForm {
             CommandResponse response = clientService.getHelp();
             Platform.runLater(() -> {
                 if (response.getError() == null) {
-                    showListDialog(languageManager.get("help.title"), response.getOutput());
+                    showListDialog(languageManager.get("button.help"), response.getOutput());
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(languageManager.get("help.title"));
+                    alert.setTitle(languageManager.get("button.help"));
                     alert.setHeaderText(null);
                     alert.setContentText(response.getError().toString());
                     alert.showAndWait();
@@ -182,13 +187,13 @@ public class MainForm {
             Platform.runLater(() -> {
                 if (response.getError() == null) {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle(languageManager.get("info.title"));
+                    alert.setTitle(languageManager.get("button.info"));
                     alert.setHeaderText(null);
                     alert.setContentText(response.getOutput());
                     alert.showAndWait();
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(languageManager.get("info.title"));
+                    alert.setTitle(languageManager.get("button.info"));
                     alert.setHeaderText(null);
                     alert.setContentText(response.getError().toString());
                     alert.showAndWait();
@@ -196,20 +201,18 @@ public class MainForm {
             });
         }));
 
-        scriptButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
-            CommandResponse response = clientService.executeScript();
-            Platform.runLater(() -> {
-                if (response.getError() == null) {
-                    showListDialog(languageManager.get("script.title"), response.getOutput());
-                } else {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(languageManager.get("script.title"));
-                    alert.setHeaderText(null);
-                    alert.setContentText(response.getError().toString());
-                    alert.showAndWait();
-                }
-            });
-        }));
+        scriptButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+
+            fileChooser.setInitialDirectory(new File("."));
+            File selectedFile = fileChooser.showOpenDialog(scriptButton.getScene().getWindow());
+
+            if (selectedFile != null) {
+                runAsyncWithProgress(progressIndicator, () -> {
+                        clientService.executeScript(selectedFile.getAbsolutePath());
+                });
+            }
+        });
 
         HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton, historyButton, helpButton, infoButton, scriptButton, progressIndicator);
         buttonBar.setAlignment(Pos.CENTER_LEFT);
@@ -223,12 +226,20 @@ public class MainForm {
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
             if (selected != null) {
                 labCanvas.highlight(selected);
+                deleteButton.setDisable(false);
+                editButton.setDisable(false);
+            }
+            else {
+                deleteButton.setDisable(true);
+                editButton.setDisable(true);
             }
         });
 
         labCanvas.setOnLabWorkSelected(labWork -> {
             tableView.getSelectionModel().select(labWork);
             tableView.scrollTo(labWork);
+            deleteButton.setDisable(false);
+            editButton.setDisable(false);
         });
 
         splitPane.getItems().addAll(leftPane, rightPane);

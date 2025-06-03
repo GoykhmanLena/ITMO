@@ -1,5 +1,7 @@
 package ru.lenok.client;
 
+import javafx.scene.control.Button;
+
 import java.util.*;
 
 public class LanguageManager {
@@ -64,6 +66,11 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Название дисциплины не может быть пустым"),
                 Map.entry("error.practice_hours.invalid", "Часы практики должны быть числом"),
 
+                Map.entry("button.history", "История"),
+                Map.entry("button.help", "Помощь"),
+                Map.entry("button.info", "Инфо"),
+                Map.entry("button.script", "Скрипт"),
+
                 Map.entry("prompt.enter_filter", "Введите фильтр..."),
                 Map.entry("error.insert", "Ошибка при сохранении"),
                 Map.entry("error.delete", "Ошибка при удалении"),
@@ -119,6 +126,11 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Discipline name cannot be empty"),
                 Map.entry("error.practice_hours.invalid", "Practice hours must be a number"),
 
+                Map.entry("button.history", "History"),
+                Map.entry("button.help", "Help"),
+                Map.entry("button.info", "Info"),
+                Map.entry("button.script", "Script"),
+
                 Map.entry("prompt.enter_filter", "Enter filter..."),
                 Map.entry("error.insert", "Error during saving"),
                 Map.entry("error.delete", "Error during deletion"),
@@ -154,7 +166,7 @@ public class LanguageManager {
                 Map.entry("label.owner_id", "ИД на сопственикот"),
 
                 Map.entry("button.ok", "ВО РЕД"),
-                Map.entry("button.cancel",   "Откажи"),
+                Map.entry("button.cancel", "Откажи"),
                 Map.entry("button.create", "Креирај"),
                 Map.entry("button.edit", "Уреди"),
                 Map.entry("button.delete", "Избриши"),
@@ -173,6 +185,11 @@ public class LanguageManager {
                 Map.entry("error.difficulty.empty", "Изберете тежина"),
                 Map.entry("error.discipline_name.empty", "Името на дисциплината не смее да биде празно"),
                 Map.entry("error.practice_hours.invalid", "Часовите практика мора да бидат број"),
+
+                Map.entry("button.history", "Историја"),
+                Map.entry("button.help", "Помош"),
+                Map.entry("button.info", "Инфо"),
+                Map.entry("button.script", "Скрипта"),
 
                 Map.entry("prompt.enter_filter", "Внесете филтер..."),
                 Map.entry("error.insert", "Грешка при зачувување"),
@@ -228,6 +245,11 @@ public class LanguageManager {
                 Map.entry("error.difficulty.empty", "Zgjidhni vështirësinë"),
                 Map.entry("error.discipline_name.empty", "Emri i disiplinës nuk duhet të jetë bosh"),
                 Map.entry("error.practice_hours.invalid", "Orët praktike duhet të jenë numër"),
+
+                Map.entry("button.history", "Historia"),
+                Map.entry("button.help", "Ndihmë"),
+                Map.entry("button.info", "Info"),
+                Map.entry("button.script", "Skript"),
 
                 Map.entry("prompt.enter_filter", "Shkruani filtrin..."),
                 Map.entry("error.insert", "Gabim gjatë ruajtjes"),
