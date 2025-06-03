@@ -1,5 +1,6 @@
 package ru.lenok.client;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.lenok.client.input.AbstractInput;
@@ -11,19 +12,22 @@ import java.net.InetAddress;
 import java.util.Map;
 import java.util.UUID;
 
+@Getter
 public class ClientApplication {
     private static final Logger logger = LoggerFactory.getLogger(ClientApplication.class);
     private final InetAddress ip;
     private final int port;
     public static final UUID CLIENT_ID = UUID.randomUUID();
     private Map<String, CommandBehavior> commandDefinitions;
-    private final User user;
+    private User user;
     private final boolean isRegister;
 
     public ClientApplication(InetAddress ip, int port, boolean isRegister, String username, String password) {
         this.ip = ip;
         this.port = port;
-        this.user = new User(username, password);
+        if (username != null){
+            this.user = new User(username, password);
+        }
         this.isRegister = isRegister;
     }
 

@@ -17,8 +17,16 @@ public final class Client {
 
 
     public static void main(String[] args) {
-        if (!(args.length == 5 || args.length == 6)) {
-            printUsageAndExit();
+        ClientApplication app = validateArgsAndCreateApp(args, false);
+        app.start();
+    }
+
+    public static ClientApplication validateArgsAndCreateApp(String[] args, boolean userDetailsOptional) {
+        if (userDetailsOptional && args.length <1 ) {
+            printUsageAndExit(userDetailsOptional);
+        }
+        else if (!(args.length == 5 || args.length == 6)) {
+            printUsageAndExit(userDetailsOptional);
         }
 
         String host = null;
@@ -33,14 +41,14 @@ public final class Client {
                     if (++i < args.length) {
                         username = args[i];
                     } else {
-                        printUsageAndExit();
+                        printUsageAndExit(userDetailsOptional);
                     }
                     break;
                 case "-p":
                     if (++i < args.length) {
                         password = args[i];
                     } else {
-                        printUsageAndExit();
+                        printUsageAndExit(userDetailsOptional);
                     }
                     break;
                 case "-r":
@@ -49,20 +57,20 @@ public final class Client {
                 default:
                     String[] hostPort = args[i].split(":");
                     if (hostPort.length != 2) {
-                        printUsageAndExit();
+                        printUsageAndExit(userDetailsOptional);
                     }
                     host = hostPort[0];
                     try {
                         port = Integer.parseInt(hostPort[1]);
                     } catch (NumberFormatException e) {
-                        printUsageAndExit();
+                        printUsageAndExit(userDetailsOptional);
                     }
                     break;
             }
         }
 
         if (host == null || username == null || password == null || port == -1) {
-            printUsageAndExit();
+            printUsageAndExit(userDetailsOptional);
         }
 
         if (!isValidHost(host)) {
@@ -89,7 +97,7 @@ public final class Client {
         }
 
         ClientApplication app = new ClientApplication(ip, port, isRegistration, username, password);
-        app.start();
+        return app;
     }
 
     private static boolean isValidHost(String host) {
@@ -102,7 +110,7 @@ public final class Client {
         return port >= 1 && port <= 65535;
     }
 
-    private static void printUsageAndExit() {
+    private static void printUsageAndExit(boolean userDetailsOptional) {
         logger.info("Использование: <host>:<port> -u <username> -p <password> [-r]");
         System.exit(1);
     }

@@ -19,8 +19,9 @@ public class ClientService {
     private Consumer<List<LabWorkWithKey>> notificationListener;
     private int serverNotificationPort;
     private User user;
+    private boolean isRegister;
 
-    public static ClientService getINSTANCE() {
+    public static ClientService getInstance() {
         return INSTANCE;
     }
 
@@ -109,4 +110,7 @@ public class ClientService {
         return getConnector().sendCommand(request);
     }
 
+    public void setRegistration(boolean register) {
+        isRegister  = register;
+    }
 }

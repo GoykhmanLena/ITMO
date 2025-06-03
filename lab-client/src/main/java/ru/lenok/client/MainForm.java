@@ -19,7 +19,7 @@ import java.util.List;
 
 public class MainForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
-    private final ClientService clientService = ClientService.getINSTANCE();
+    private final ClientService clientService = ClientService.getInstance();
     private final ObservableList<LabWorkWithKey> labWorks = FXCollections.observableArrayList();
     private final FilteredList<LabWorkWithKey> filteredLabWorks = new FilteredList<>(labWorks, s -> true);
     private final Stage stage;
@@ -120,6 +120,10 @@ public class MainForm {
         Button historyButton = new Button(languageManager.get("button.history"));
         Button helpButton = new Button(languageManager.get("button.help"));
 
+        // New buttons
+        Button infoButton = new Button(languageManager.get("button.info"));
+        Button scriptButton = new Button(languageManager.get("button.script"));
+
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
         progressIndicator.setPrefSize(24, 24);
@@ -173,7 +177,41 @@ public class MainForm {
             });
         }));
 
-        HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton, historyButton, helpButton, progressIndicator);
+        infoButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
+            CommandResponse response = clientService.getInfo();
+            Platform.runLater(() -> {
+                if (response.getError() == null) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle(languageManager.get("info.title"));
+                    alert.setHeaderText(null);
+                    alert.setContentText(response.getOutput());
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(languageManager.get("info.title"));
+                    alert.setHeaderText(null);
+                    alert.setContentText(response.getError().toString());
+                    alert.showAndWait();
+                }
+            });
+        }));
+
+        scriptButton.setOnAction(e -> runAsyncWithProgress(progressIndicator, () -> {
+            CommandResponse response = clientService.executeScript();
+            Platform.runLater(() -> {
+                if (response.getError() == null) {
+                    showListDialog(languageManager.get("script.title"), response.getOutput());
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle(languageManager.get("script.title"));
+                    alert.setHeaderText(null);
+                    alert.setContentText(response.getError().toString());
+                    alert.showAndWait();
+                }
+            });
+        }));
+
+        HBox buttonBar = new HBox(10, addButton, editButton, deleteButton, clearButton, historyButton, helpButton, infoButton, scriptButton, progressIndicator);
         buttonBar.setAlignment(Pos.CENTER_LEFT);
 
         leftPane.getChildren().addAll(tableView, buttonBar);
@@ -227,7 +265,6 @@ public class MainForm {
         listView.getItems().addAll(lines);
         listView.setPrefSize(600, 400);
 
-        // Put ListView inside a VBox with padding
         VBox content = new VBox(listView);
         content.setPadding(new Insets(10));
 

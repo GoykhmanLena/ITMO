@@ -8,14 +8,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import ru.lenok.common.CommandResponse;
+import ru.lenok.common.auth.User;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.util.List;
-import java.util.UUID;
 
 public class LoginForm {
     private final LanguageManager languageManager = LanguageManager.getInstance();
-    private final ClientService clientService = ClientService.getINSTANCE();
+    private final ClientService clientService = ClientService.getInstance();
 
     public void start(Stage stage) {
         stage.setOnCloseRequest(event -> {
@@ -23,11 +23,14 @@ public class LoginForm {
             System.exit(0);
         });
 
-        TextField loginField = new TextField(UUID.randomUUID().toString().substring(0, 8));
+        User user = clientService.getUser();
+        boolean register = clientService.isRegister();
+
+        TextField loginField = new TextField(user != null ? user.getUsername() : "");
         PasswordField passwordField = new PasswordField();
-        passwordField.setText(UUID.randomUUID().toString().substring(0, 8));
+        passwordField.setText(user != null ? user.getPassword() : "");
         CheckBox registerBox = new CheckBox();
-        registerBox.setSelected(true);
+        registerBox.setSelected(register);
 
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");

@@ -5,6 +5,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -120,7 +122,7 @@ public class LabWorkForm extends Stage {
         progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
         progressIndicator.setMaxSize(24, 24);
-        buttonBox.getChildren().addAll(cancelBtn, okBtn, progressIndicator);
+        buttonBox.getChildren().addAll(okBtn, cancelBtn, progressIndicator);
         grid.add(buttonBox, 0, row, 2, 1);
 
         if (existing != null) {
@@ -146,6 +148,10 @@ public class LabWorkForm extends Stage {
         scrollPane.setFitToWidth(true);
 
         Scene scene = new Scene(scrollPane, 500, Region.USE_COMPUTED_SIZE);
+        scene.getAccelerators().put(
+                new KeyCodeCombination(KeyCode.ESCAPE),
+                () -> cancelBtn.fire()
+        );
         setScene(scene);
         setMinWidth(400);
         setMinHeight(400);
@@ -260,7 +266,7 @@ public class LabWorkForm extends Stage {
                         .build();
 
                 result = new LabWorkWithKey(key, lw);
-                CommandResponse insertResponse = ClientService.getINSTANCE().createOrUpdateLabWork(result);
+                CommandResponse insertResponse = ClientService.getInstance().createOrUpdateLabWork(result);
 
                 Platform.runLater(() -> {
                     if (insertResponse.getError() != null) {
