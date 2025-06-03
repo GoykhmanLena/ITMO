@@ -15,13 +15,15 @@ import ru.lenok.common.models.Difficulty;
 import ru.lenok.common.models.LabWork;
 import ru.lenok.common.models.LabWorkWithKey;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class LabWorkForm extends Stage {
 
     private final LanguageManager languageManager = LanguageManager.getInstance();
-    private final ClientService clientService = ClientService.getINSTANCE();
 
     private LabWorkWithKey result;
     private final VBox errorBox;
@@ -115,19 +117,19 @@ public class LabWorkForm extends Stage {
         progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
         progressIndicator.setMaxSize(24, 24);
-        buttonBox.getChildren().addAll(progressIndicator, okBtn, cancelBtn);
+        buttonBox.getChildren().addAll(cancelBtn, okBtn, progressIndicator);
         grid.add(buttonBox, 0, row, 2, 1);
 
         if (existing != null) {
             keyField.setText(existing.getKey());
             nameField.setText(existing.getName());
-            xField.setText(String.valueOf(existing.getCoordinates().getX()));
-            yField.setText(String.valueOf(existing.getCoordinates().getY()));
-            minPointField.setText(String.valueOf(existing.getMinimalPoint()));
+            xField.setText(NumberFormat.getNumberInstance().format(existing.getCoordinates().getX()));
+            yField.setText(NumberFormat.getNumberInstance().format(existing.getCoordinates().getY()));
+            minPointField.setText(NumberFormat.getNumberInstance().format(existing.getMinimalPoint()));
             descArea.setText(existing.getDescription());
             difficultyBox.setValue(existing.getDifficulty());
             discNameField.setText(existing.getDiscipline().getName());
-            discHoursField.setText(String.valueOf(existing.getDiscipline().getPracticeHours()));
+            discHoursField.setText(NumberFormat.getIntegerInstance().format(existing.getDiscipline().getPracticeHours()));
         }
 
         cancelBtn.setOnAction(e -> close());
@@ -151,6 +153,9 @@ public class LabWorkForm extends Stage {
         resetFieldStyles(keyField, nameField, xField, yField, minPointField, descArea, difficultyBox, discNameField, discHoursField);
 
         boolean valid = true;
+        Locale locale = Locale.getDefault();
+        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
 
         String key = keyField.getText().trim();
         if (key.isEmpty()) {
@@ -166,28 +171,28 @@ public class LabWorkForm extends Stage {
 
         double x = 0;
         try {
-            x = Double.parseDouble(xField.getText().trim());
-        } catch (NumberFormatException ex) {
+            x = numberFormat.parse(xField.getText().trim()).doubleValue();
+        } catch (ParseException ex) {
             addError(xField, languageManager.get("error.x.invalid"));
             valid = false;
         }
 
         float y = 0;
         try {
-            y = Float.parseFloat(yField.getText().trim());
-        } catch (NumberFormatException ex) {
+            y = numberFormat.parse(yField.getText().trim()).floatValue();
+        } catch (ParseException ex) {
             addError(yField, languageManager.get("error.y.invalid"));
             valid = false;
         }
 
         double minPoint = 0;
         try {
-            minPoint = Double.parseDouble(minPointField.getText().trim());
+            minPoint = numberFormat.parse(minPointField.getText().trim()).doubleValue();
             if (minPoint < 0) {
                 addError(minPointField, languageManager.get("error.min_point.negative"));
                 valid = false;
             }
-        } catch (NumberFormatException ex) {
+        } catch (ParseException ex) {
             addError(minPointField, languageManager.get("error.min_point.invalid"));
             valid = false;
         }
@@ -215,8 +220,8 @@ public class LabWorkForm extends Stage {
 
         long hours = 0;
         try {
-            hours = Long.parseLong(discHoursField.getText().trim());
-        } catch (NumberFormatException ex) {
+            hours = integerFormat.parse(discHoursField.getText().trim()).longValue();
+        } catch (ParseException ex) {
             addError(discHoursField, languageManager.get("error.practice_hours.invalid"));
             valid = false;
         }
@@ -284,9 +289,5 @@ public class LabWorkForm extends Stage {
         for (Control f : fields) {
             f.setStyle(null);
         }
-    }
-
-    public LabWorkWithKey getResult() {
-        return result;
     }
 }

@@ -35,19 +35,6 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().clear();
-/*
-        Map.entry("label.key", "Ключ"),
-                Map.entry("label.name", "Имя"),
-                Map.entry("title.coordinates", "Координаты"),
-                Map.entry("label.x", "X"),
-                Map.entry("label.y", "Y"),
-                Map.entry("label.creation_date", "Дата создания"),
-                Map.entry("label.minimal_point", "Минимальный балл"),
-                Map.entry("label.description", "Описание"),
-                Map.entry("label.difficulty", "Сложность"),
-                Map.entry("title.discipline", "Дисциплина"),
-                Map.entry("label.discipline_name", "Название дисциплины"),
-                Map.entry("label.practice_hours", "Часы практики"),*/
 
         addFilterableColumn(languageManager.get("label.key"), c -> c.getValue().getKey());
         addFilterableColumn("ID", c -> String.valueOf(c.getValue().getId()));
@@ -170,7 +157,7 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
     private void showFilterPopup(Node owner, String currentFilter, Consumer<String> onFilterEntered) {
         TextField filterField = new TextField(currentFilter);
-        filterField.setPromptText("Введите фильтр...");
+        filterField.setPromptText(languageManager.get("prompt.enter_filter"));
         VBox box = new VBox(filterField);
         box.setStyle("-fx-background-color: white; -fx-border-color: gray; -fx-padding: 5;");
         Popup popup = new Popup();

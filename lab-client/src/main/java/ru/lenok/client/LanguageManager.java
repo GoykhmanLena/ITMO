@@ -62,7 +62,10 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Название дисциплины не может быть пустым"),
                 Map.entry("error.practice_hours.invalid", "Часы практики должны быть числом"),
 
+                Map.entry("prompt.enter_filter", "Введите фильтр..."),
                 Map.entry("error.insert", "Ошибка при сохранении"),
+                Map.entry("error.delete", "Ошибка при удалении"),
+                Map.entry("error.clear", "Ошибка при очистке"),
                 Map.entry("error.exception", "Исключение")
         ));
 
@@ -113,7 +116,10 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Discipline name cannot be empty"),
                 Map.entry("error.practice_hours.invalid", "Practice hours must be a number"),
 
-                Map.entry("error.insert", "Error saving"),
+                Map.entry("prompt.enter_filter", "Enter filter..."),
+                Map.entry("error.insert", "Error during saving"),
+                Map.entry("error.delete", "Error during deletion"),
+                Map.entry("error.clear", "Error during clearing"),
                 Map.entry("error.exception", "Exception")
         ));
 
@@ -164,7 +170,10 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Името на дисциплината не смее да биде празно"),
                 Map.entry("error.practice_hours.invalid", "Часовите практика мора да бидат број"),
 
+                Map.entry("prompt.enter_filter", "Внесете филтер..."),
                 Map.entry("error.insert", "Грешка при зачувување"),
+                Map.entry("error.delete", "Грешка при бришење"),
+                Map.entry("error.clear", "Грешка при чистење"),
                 Map.entry("error.exception", "Исклучок")
         ));
 
@@ -215,7 +224,10 @@ public class LanguageManager {
                 Map.entry("error.discipline_name.empty", "Emri i disiplinës nuk duhet të jetë bosh"),
                 Map.entry("error.practice_hours.invalid", "Orët praktike duhet të jenë numër"),
 
+                Map.entry("prompt.enter_filter", "Shkruani filtrin..."),
                 Map.entry("error.insert", "Gabim gjatë ruajtjes"),
+                Map.entry("error.delete", "Gabim gjatë fshirjes"),
+                Map.entry("error.clear", "Gabim gjatë pastrimit"),
                 Map.entry("error.exception", "Përjashtim")
         ));
 
@@ -227,6 +239,7 @@ public class LanguageManager {
 
     public void setLanguage(String name) {
         current = locales.getOrDefault(name, new Locale("ru"));
+        Locale.setDefault(current);
     }
 
     public String getCurrentLanguageName() {

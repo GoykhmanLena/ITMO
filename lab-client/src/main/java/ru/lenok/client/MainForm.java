@@ -108,7 +108,7 @@ public class MainForm {
             if (selected != null) {
                 Exception error = clientService.deleteLabWork(selected.getKey());
                 if (error != null) {
-                    new Alert(Alert.AlertType.ERROR, "Ошибка при удалении: " + error).showAndWait();
+                    new Alert(Alert.AlertType.ERROR, languageManager.get("error.delete") + ": " + error).showAndWait();
                 }
             }
         });
@@ -117,7 +117,7 @@ public class MainForm {
         clearButton.setOnAction(e -> {
             Exception error = clientService.clearLabWorks();
             if (error != null) {
-                new Alert(Alert.AlertType.ERROR, "Ошибка при очистке: " + error).showAndWait();
+                new Alert(Alert.AlertType.ERROR, languageManager.get("error.clear") + ": " + error).showAndWait();
             }
         });
 
