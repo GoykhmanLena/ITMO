@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import ru.lenok.common.models.Coordinates;
+import ru.lenok.common.models.Difficulty;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.text.NumberFormat;
@@ -93,10 +94,10 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
                 Comparator.nullsLast(String::compareToIgnoreCase),
                 s -> s);
 
-        this.<String>addFilterableColumn(languageManager.get("label.difficulty"),
-                c -> c.getValue().getDifficulty().name(),
-                Comparator.nullsLast(String::compareToIgnoreCase),
-                s -> s);
+        this.<Difficulty>addFilterableColumn(languageManager.get("label.difficulty"),
+                c -> c.getValue().getDifficulty(),
+                Comparator.nullsLast(Comparator.comparingInt(Enum::ordinal)),
+                d -> d.name());
 
         this.<String>addFilterableColumn(languageManager.get("title.discipline"),
                 c -> {
