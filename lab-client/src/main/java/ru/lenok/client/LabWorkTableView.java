@@ -53,8 +53,6 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().clear();
 
-        // Добавляем колонки с указанием типа и компаратора
-
         this.<String>addFilterableColumn(languageManager.get("label.key"),
                 c -> c.getValue().getKey(),
                 Comparator.nullsLast(String::compareToIgnoreCase),
@@ -70,13 +68,15 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
                 Comparator.nullsLast(String::compareToIgnoreCase),
                 s -> s);
 
-        this.<String>addFilterableColumn(languageManager.get("title.coordinates"),
-                c -> {
-                    var coords = c.getValue().getCoordinates();
-                    return "(" + numberFormat.format(coords.getX()) + " ; " + numberFormat.format(coords.getY()) + ")";
-                },
-                Comparator.nullsLast(String::compareTo),
-                s -> s);
+        this.<Coordinates>addFilterableColumn(languageManager.get("title.coordinates"),
+                c -> c.getValue().getCoordinates(),
+                Comparator.nullsLast((a, b) -> {
+                    if (a == null && b == null) return 0;
+                    if (a == null) return -1;
+                    if (b == null) return 1;
+                    return a.compareTo(b);
+                }),
+                coords -> "(" + numberFormat.format(coords.getX()) + " ; " + numberFormat.format(coords.getY()) + ")");
 
         this.<java.time.LocalDateTime>addFilterableColumn(languageManager.get("label.creation_date"),
                 c -> c.getValue().getCreationDate(),
@@ -122,6 +122,15 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         column.setCellValueFactory(cell -> new SimpleObjectProperty<>(extractor.apply(cell)));
         column.setSortable(true);
         column.setComparator(comparator);
+
+        // Устанавливаем отображение через toStringMapper
+        column.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "" : toStringMapper.apply(item));
+            }
+        });
 
         Label label = new Label(title);
 
@@ -200,8 +209,6 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         column.setGraphic(headerBox);
 
-        // Для фильтрации мы сохраним в columnFilters строковое представление из toStringMapper
-        // В applyFilters будем сравнивать строку из колонки с фильтром
         getColumns().add(column);
     }
 
