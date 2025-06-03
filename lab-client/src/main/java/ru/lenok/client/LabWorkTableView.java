@@ -1,6 +1,6 @@
 package ru.lenok.client;
 
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -11,15 +11,18 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import ru.lenok.common.models.Coordinates;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class LabWorkTableView extends TableView<LabWorkWithKey> {
     private final LanguageManager languageManager = LanguageManager.getInstance();
@@ -28,19 +31,17 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
     private final Locale defaultLocale = Locale.getDefault();
 
-    // Настройка форматирования с учетом локали
     private final DateTimeFormatter dateFormatter =
             DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(defaultLocale);
     private final NumberFormat numberFormat = NumberFormat.getNumberInstance(defaultLocale);
     private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
 
     {
-        // Можно настроить минимальное количество знаков после запятой
         numberFormat.setMinimumFractionDigits(0);
         numberFormat.setMaximumFractionDigits(3);
     }
 
-    private final Map<TableColumn<LabWorkWithKey, String>, String> columnFilters = new HashMap<>();
+    private final Map<TableColumn<LabWorkWithKey, ?>, String> columnFilters = new HashMap<>();
 
     public LabWorkTableView(ObservableList<LabWorkWithKey> data) {
         this.filteredData = new FilteredList<>(data, p -> true);
@@ -52,30 +53,75 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().clear();
 
-        addFilterableColumn(languageManager.get("label.key"), c -> c.getValue().getKey());
-        addFilterableColumn("ID", c -> integerFormat.format(c.getValue().getId()));
-        addFilterableColumn(languageManager.get("label.name"), c -> c.getValue().getName());
-        addFilterableColumn(languageManager.get("title.coordinates"), c -> {
-            var coords = c.getValue().getCoordinates();
-            return "(" + numberFormat.format(coords.getX()) + " ; " + numberFormat.format(coords.getY()) + ")";
-        });
-        addFilterableColumn(languageManager.get("label.creation_date"), c -> c.getValue().getCreationDate().format(dateFormatter));
-        addFilterableColumn(languageManager.get("label.minimal_point"), c -> numberFormat.format(c.getValue().getMinimalPoint()));
-        addFilterableColumn(languageManager.get("label.description"), c -> c.getValue().getDescription());
-        addFilterableColumn(languageManager.get("label.difficulty"), c -> c.getValue().getDifficulty().name());
-        addFilterableColumn(languageManager.get("title.discipline"), c -> {
-            var d = c.getValue().getDiscipline();
-            return d.getName() + " (" + integerFormat.format(d.getPracticeHours()) + languageManager.get("label.hour")+ ")";
-        });
-        addFilterableColumn(languageManager.get("label.owner_id"), c -> integerFormat.format(c.getValue().getOwnerId()));
+        // Добавляем колонки с указанием типа и компаратора
+
+        this.<String>addFilterableColumn(languageManager.get("label.key"),
+                c -> c.getValue().getKey(),
+                Comparator.nullsLast(String::compareToIgnoreCase),
+                s -> s);
+
+        this.<Long>addFilterableColumn("ID",
+                c -> c.getValue().getId(),
+                Comparator.nullsLast(Long::compareTo),
+                integerFormat::format);
+
+        this.<String>addFilterableColumn(languageManager.get("label.name"),
+                c -> c.getValue().getName(),
+                Comparator.nullsLast(String::compareToIgnoreCase),
+                s -> s);
+
+        this.<String>addFilterableColumn(languageManager.get("title.coordinates"),
+                c -> {
+                    var coords = c.getValue().getCoordinates();
+                    return "(" + numberFormat.format(coords.getX()) + " ; " + numberFormat.format(coords.getY()) + ")";
+                },
+                Comparator.nullsLast(String::compareTo),
+                s -> s);
+
+        this.<java.time.LocalDateTime>addFilterableColumn(languageManager.get("label.creation_date"),
+                c -> c.getValue().getCreationDate(),
+                Comparator.nullsLast(java.time.LocalDateTime::compareTo),
+                d -> d.format(dateFormatter));
+
+        this.<Double>addFilterableColumn(languageManager.get("label.minimal_point"),
+                c -> c.getValue().getMinimalPoint(),
+                Comparator.nullsLast(Double::compareTo),
+                numberFormat::format);
+
+        this.<String>addFilterableColumn(languageManager.get("label.description"),
+                c -> c.getValue().getDescription(),
+                Comparator.nullsLast(String::compareToIgnoreCase),
+                s -> s);
+
+        this.<String>addFilterableColumn(languageManager.get("label.difficulty"),
+                c -> c.getValue().getDifficulty().name(),
+                Comparator.nullsLast(String::compareToIgnoreCase),
+                s -> s);
+
+        this.<String>addFilterableColumn(languageManager.get("title.discipline"),
+                c -> {
+                    var d = c.getValue().getDiscipline();
+                    return d.getName() + " (" + integerFormat.format(d.getPracticeHours()) + languageManager.get("label.hour") + ")";
+                },
+                Comparator.nullsLast(String::compareToIgnoreCase),
+                s -> s);
+
+        this.<Long>addFilterableColumn(languageManager.get("label.owner_id"),
+                c -> c.getValue().getOwnerId(),
+                Comparator.nullsLast(Long::compareTo),
+                integerFormat::format);
     }
 
-    private void addFilterableColumn(String title,
-                                     javafx.util.Callback<TableColumn.CellDataFeatures<LabWorkWithKey, String>, String> extractor) {
-        TableColumn<LabWorkWithKey, String> column = new TableColumn<>();
+    private <T extends Comparable<? super T>> void addFilterableColumn(
+            String title,
+            Function<TableColumn.CellDataFeatures<LabWorkWithKey, T>, T> extractor,
+            Comparator<T> comparator,
+            Function<T, String> toStringMapper) {
 
-        column.setCellValueFactory(cell -> new SimpleStringProperty(extractor.call(cell)));
+        TableColumn<LabWorkWithKey, T> column = new TableColumn<>();
+        column.setCellValueFactory(cell -> new SimpleObjectProperty<>(extractor.apply(cell)));
         column.setSortable(true);
+        column.setComparator(comparator);
 
         Label label = new Label(title);
 
@@ -153,16 +199,22 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         });
 
         column.setGraphic(headerBox);
+
+        // Для фильтрации мы сохраним в columnFilters строковое представление из toStringMapper
+        // В applyFilters будем сравнивать строку из колонки с фильтром
         getColumns().add(column);
     }
 
     private void applyFilters() {
         filteredData.setPredicate(item -> {
             for (var entry : columnFilters.entrySet()) {
-                TableColumn<LabWorkWithKey, String> column = entry.getKey();
+                TableColumn<LabWorkWithKey, ?> column = entry.getKey();
                 String filterText = entry.getValue();
+
                 Object cellData = column.getCellData(item);
-                if (cellData == null || !cellData.toString().toLowerCase().contains(filterText)) {
+                String cellString = cellData == null ? "" : cellData.toString().toLowerCase();
+
+                if (!cellString.contains(filterText)) {
                     return false;
                 }
             }
