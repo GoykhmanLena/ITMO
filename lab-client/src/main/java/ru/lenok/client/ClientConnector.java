@@ -32,7 +32,7 @@ import static ru.lenok.common.util.SerializationUtils.INSTANCE;
 public class ClientConnector {
     private static final Logger logger = LoggerFactory.getLogger(ClientConnector.class);
     public static final int INTER_WAIT_SLEEP_TIMEOUT = 50;
-    private static final int RETRY_COUNT = 10;
+    private static final int RETRY_COUNT = 1;
     private static final int WAIT_TIMEOUT = 1000 * 10;
     private final DatagramSocket notificationListeningSocket;
 
@@ -41,45 +41,13 @@ public class ClientConnector {
     public ClientConnector(InetAddress ip, int port) throws IOException {
         serverAddress = new InetSocketAddress(ip, port);
         this.notificationListeningSocket = new DatagramSocket(0);
-        ClientService.getINSTANCE().setServerNotificationPort(getServerNotificationPort());
-        logger.info("Клиент слушает оповещения от сервера на порту " + port);
+        ClientService.getInstance().setServerNotificationPort(getServerNotificationPort());
         new Thread(() -> listenForServerNotifications()).start();
     }
 
     public int getServerNotificationPort() {
         return notificationListeningSocket.getLocalPort();
     }
-    /*  private Object sendDataOld(Object obj) throws IOException {
-        int retryCount = RETRY_COUNT;
-        while (retryCount > 0) {
-            try (DatagramSocket socket = new DatagramSocket();) {
-                byte[] data = serialize(obj);
-                DatagramPacket packet = new DatagramPacket(data, data.length, ip, port);
-                logger.debug("передаю данные: " + obj);
-                socket.send(packet);
-
-                byte[] buffer = new byte[BUFFER_SIZE];
-                DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
-                socket.setSoTimeout(WAIT_TIMEOUT);
-                socket.receive(responsePacket);
-                Object response = deserialize(responsePacket.getData());
-                logger.debug("Ответ от сервера: " + response);
-                return response;
-            } catch (SocketTimeoutException e) {
-                retryCount--;
-                e.printStackTrace();
-                if (retryCount == 0) {
-                    throw e;
-                }
-                logger.error("Ошибка, повторяю попытку отправить, попытка: " + (RETRY_COUNT - retryCount + 1));
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-        return null;
-    }
-*/
 
     private Object sendData(Object obj) {
         int retryCount = RETRY_COUNT;
@@ -216,7 +184,7 @@ public class ClientConnector {
                         if (serverNotification instanceof CommandResponse){
                             CommandResponse commandResponse = (CommandResponse) serverNotification;
                             List<LabWorkWithKey> labWorkWithKeyList = (List<LabWorkWithKey>) commandResponse.getOutputObject();
-                            Consumer<List<LabWorkWithKey>> serverNotifier = ClientService.getINSTANCE().getNotificationListener();
+                            Consumer<List<LabWorkWithKey>> serverNotifier = ClientService.getInstance().getNotificationListener();
                             if (serverNotifier != null) {
                                 serverNotifier.accept(labWorkWithKeyList);
                             }

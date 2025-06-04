@@ -26,6 +26,7 @@ import java.util.Locale;
 public class LabWorkForm extends Stage {
 
     private final LanguageManager languageManager = LanguageManager.getInstance();
+    private final ClientService clientService = ClientService.getInstance();
 
     private LabWorkWithKey result;
     private final VBox errorBox;
@@ -263,14 +264,18 @@ public class LabWorkForm extends Stage {
                         .setDifficulty(difficulty)
                         .setDisciplineName(discName)
                         .setDisciplinePracticeHours(finalHours)
+                        .setId(existing != null ? existing.getId() : null)
                         .build();
 
                 result = new LabWorkWithKey(key, lw);
-                CommandResponse insertResponse = ClientService.getInstance().createOrUpdateLabWork(result);
+                CommandResponse response = existing == null ?
+                        clientService.createLabWork(result) :
+                        clientService.updateLabWork(result);
 
+                CommandResponse finalResponse = response;
                 Platform.runLater(() -> {
-                    if (insertResponse.getError() != null) {
-                        new Alert(Alert.AlertType.ERROR, languageManager.get("error.insert") + ": " + insertResponse.getError()).showAndWait();
+                    if (finalResponse.getError() != null) {
+                        new Alert(Alert.AlertType.ERROR, languageManager.get("error.insert") + ": " + finalResponse.getError()).showAndWait();
                         okBtn.setDisable(false);
                         progressIndicator.setVisible(false);
                     } else {

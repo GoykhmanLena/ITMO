@@ -33,12 +33,10 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
     private final NumberFormat integerFormat = NumberFormat.getIntegerInstance(defaultLocale);
     Locale locale = Locale.getDefault();
 
-
     private LabWorkWithKey selectedLabWork;
     private LabWorkWithKey hoveredLabWork;
 
     private Consumer<LabWorkWithKey> onLabWorkSelected;
-
 
     private Canvas canvas;
 
@@ -49,7 +47,6 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
 
     private long animationStartTime = 0;
 
-    // Для плавного перехода к целевым координатам
     private boolean isTransitioningToTargets = false;
     private final Map<LabWorkWithKey, double[]> targetPositions = new HashMap<>();
     private final double transitionDurationSeconds = 2.0;
@@ -67,7 +64,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         widthProperty().addListener(observable -> {
             resizeCanvas();
             if (!positions.isEmpty()) {
-                updateTargetPositions(); // при изменении размера пересчитаем целевые позиции
+                updateTargetPositions();
             }
         });
         heightProperty().addListener(observable -> {
@@ -115,9 +112,8 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         double width = getWidth();
         double height = getHeight();
 
-        if (width == 0 || height == 0) return; // Защита от деления на 0
+        if (width == 0 || height == 0) return;
 
-        // Нужно понять диапазон координат LabWork, чтобы масштабировать
         double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
 
@@ -130,7 +126,6 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             if (y > maxY) maxY = y;
         }
 
-        // Защита если все координаты одинаковы
         if (minX == maxX) {
             minX -= 1;
             maxX += 1;
@@ -140,12 +135,11 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             maxY += 1;
         }
 
-        double margin = 20; // отступы от краев
+        double margin = 20;
         for (LabWorkWithKey lw : labWorks) {
             double x = lw.getCoordinates().getX();
             double y = lw.getCoordinates().getY();
 
-            // масштабируем в экранные координаты
             double scaledX = margin + (x - minX) / (maxX - minX) * (width - 2 * margin);
             double scaledY = margin + (y - minY) / (maxY - minY) * (height - 2 * margin);
 
@@ -154,7 +148,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
     }
 
     private double randVel() {
-        return rand.nextDouble() * 1000;
+        return (rand.nextDouble() - 0.5) * 2000;
     }
 
     private void startAnimation() {
@@ -164,10 +158,9 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             @Override
             public void handle(long now) {
                 if (animationStartTime == 0) {
-                    animationStartTime = now; // старт стартовой анимации
+                    animationStartTime = now;
                 }
 
-                // Если сейчас идет переход к целевым позициям — запускаем transitionStep()
                 if (isTransitioningToTargets) {
                     if (lastUpdate == 0) {
                         lastUpdate = now;
@@ -181,9 +174,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
                     return;
                 }
 
-                // Если прошло 3 секунды стартовой анимации — переходим к анимации перехода
                 if (now - animationStartTime > 3_000_000_000L) {
-                    // Стартуем плавный переход к реальным координатам
                     isTransitioningToTargets = true;
                     transitionStartTime = now;
                     lastUpdate = now;
@@ -208,13 +199,11 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         double elapsedSeconds = (now - transitionStartTime) / 1_000_000_000.0;
         double t = Math.min(elapsedSeconds / transitionDurationSeconds, 1.0);
 
-        // Интерполируем позиции кружков от текущих к targetPositions по t
         for (LabWorkWithKey lw : labWorks) {
             double[] currentPos = positions.get(lw);
             double[] targetPos = targetPositions.get(lw);
             if (targetPos == null || currentPos == null) continue;
 
-            // Линейная интерполяция: pos = current*(1-t) + target*t
             double newX = currentPos[0] * (1 - t) + targetPos[0] * t;
             double newY = currentPos[1] * (1 - t) + targetPos[1] * t;
 
@@ -222,9 +211,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         }
 
         if (t >= 1.0) {
-            // Переход завершен
             isTransitioningToTargets = false;
-            // Обнулим скорости, чтобы кружки стояли
             velocities.clear();
             for (LabWorkWithKey lw : labWorks) {
                 velocities.put(lw, new double[]{0, 0});
@@ -251,6 +238,61 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
 
             pos[0] = Math.max(radius, Math.min(width - radius, pos[0]));
             pos[1] = Math.max(radius, Math.min(height - radius, pos[1]));
+        }
+
+        // Обработка столкновений
+        for (int i = 0; i < labWorks.size(); i++) {
+            for (int j = i + 1; j < labWorks.size(); j++) {
+                LabWorkWithKey a = labWorks.get(i);
+                LabWorkWithKey b = labWorks.get(j);
+                double[] pa = positions.get(a);
+                double[] pb = positions.get(b);
+                double[] va = velocities.get(a);
+                double[] vb = velocities.get(b);
+                double ra = getRadius(a);
+                double rb = getRadius(b);
+
+                double dx = pb[0] - pa[0];
+                double dy = pb[1] - pa[1];
+                double distSq = dx * dx + dy * dy;
+                double minDist = ra + rb;
+
+                if (distSq < minDist * minDist) {
+                    double dist = Math.sqrt(distSq);
+                    if (dist == 0) {
+                        dist = 0.1;
+                        dx = 0.1;
+                        dy = 0.1;
+                    }
+                    double nx = dx / dist;
+                    double ny = dy / dist;
+
+                    double tx = -ny;
+                    double ty = nx;
+
+                    double vna = va[0] * nx + va[1] * ny;
+                    double vnb = vb[0] * nx + vb[1] * ny;
+                    double vta = va[0] * tx + va[1] * ty;
+                    double vtb = vb[0] * tx + vb[1] * ty;
+
+                    double m = 1;
+
+                    double vnaAfter = vnb;
+                    double vnbAfter = vna;
+
+                    va[0] = vnaAfter * nx + vta * tx;
+                    va[1] = vnaAfter * ny + vta * ty;
+
+                    vb[0] = vnbAfter * nx + vtb * tx;
+                    vb[1] = vnbAfter * ny + vtb * ty;
+
+                    double overlap = minDist - dist;
+                    pa[0] -= nx * overlap / 2;
+                    pa[1] -= ny * overlap / 2;
+                    pb[0] += nx * overlap / 2;
+                    pb[1] += ny * overlap / 2;
+                }
+            }
         }
     }
 
@@ -399,5 +441,4 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
 
         return sb.toString();
     }
-
 }
