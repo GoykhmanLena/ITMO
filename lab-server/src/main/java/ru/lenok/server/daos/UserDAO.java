@@ -42,13 +42,21 @@ public class UserDAO extends AbstractDAO {
     }
 
     private void persistInitialState(Set<Long> initialState) throws SQLException, NoSuchAlgorithmException {
-        long maxId = 1L;
+        long maxId = 0L;
         Map<Long, String> people = new HashMap<>();
+        people.put(0L, "User0");
         people.put(1L, "Gavrilov");
         people.put(2L, "Klimenkov");
         people.put(3L, "Balakshin");
         people.put(4L, "Holodova");
         people.put(5L, "User5");
+        people.put(6L, "User6");
+        people.put(7L, "User7");
+        people.put(8L, "User8");
+        people.put(9L, "User9");
+        people.put(10L, "User10");
+
+
         for (Long userId : initialState) {
             User user = new User(userId, people.get(userId), "1");
             insert(user);
