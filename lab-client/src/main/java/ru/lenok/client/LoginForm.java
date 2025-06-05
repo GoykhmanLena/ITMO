@@ -27,16 +27,23 @@ public class LoginForm {
         boolean register = clientService.isRegister();
 
         TextField loginField = new TextField(user != null ? user.getUsername() : "");
+        loginField.getStyleClass().add("input-field");
+
         PasswordField passwordField = new PasswordField();
         passwordField.setText(user != null ? user.getPassword() : "");
+        passwordField.getStyleClass().add("input-field");
+
         CheckBox registerBox = new CheckBox();
         registerBox.setSelected(register);
 
         Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: red;");
+        errorLabel.setId("error-label");
 
         Button loginButton = new Button();
+        loginButton.setId("login-button");
+
         Button cancelButton = new Button(languageManager.get("button.cancel"));
+        cancelButton.setId("cancel-button");
 
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setVisible(false);
@@ -127,8 +134,13 @@ public class LoginForm {
         BorderPane root = new BorderPane();
         root.setTop(topLangBox);
         root.setCenter(grid);
+        root.setId("login-root");
 
         Scene scene = new Scene(root, 400, Region.USE_COMPUTED_SIZE);
+
+        // 👇 Подключение внешнего CSS
+        scene.getStylesheets().add(getClass().getResource("/login-style.css").toExternalForm());
+
         stage.setScene(scene);
         stage.setTitle(languageManager.get("title.login"));
         stage.sizeToScene();

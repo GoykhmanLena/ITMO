@@ -1,0 +1,52 @@
+/* Основной фон */
+#login-root {
+    -fx-background-color: linear-gradient(to bottom right, #e0f7fa, #80deea);
+}
+
+/* Общие стили для полей ввода */
+.input-field {
+    -fx-border-color: #90caf9;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-background-color: white;
+    -fx-padding: 5;
+    -fx-transition: all 0.3s ease-in-out;
+}
+
+.input-field:hover {
+    -fx-border-color: #1976d2;
+    -fx-effect: dropshadow(three-pass-box, rgba(25,118,210,0.5), 10, 0.5, 0, 0);
+}
+
+/* Ошибка */
+#error-label {
+    -fx-text-fill: red;
+    -fx-font-weight: bold;
+}
+
+/* Кнопка входа — зелёная */
+#login-button {
+    -fx-background-color: #4caf50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+}
+
+#login-button:hover {
+    -fx-background-color: #388e3c;
+}
+
+/* Кнопка отмены — красная */
+#cancel-button {
+    -fx-background-color: #f44336;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+}
+
+#cancel-button:hover {
+    -fx-background-color: #d32f2f;
+}
