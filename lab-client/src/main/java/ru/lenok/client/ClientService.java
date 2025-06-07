@@ -1,7 +1,6 @@
 package ru.lenok.client;
 
 import lombok.Data;
-import ru.lenok.client.client_command.ExecuteScriptCommand;
 import ru.lenok.common.CommandRequest;
 import ru.lenok.common.CommandResponse;
 import ru.lenok.common.CommandWithArgument;
@@ -43,10 +42,15 @@ public class ClientService {
         return notificationListener;
     }
 
-    public CommandResponse createOrUpdateLabWork(LabWorkWithKey labWorkWithKey){
+    public CommandResponse createLabWork(LabWorkWithKey labWorkWithKey){
         CommandBehavior behavior = commandDefinitions.get("insert");
-        CommandRequest showRequest = new CommandRequest(new CommandWithArgument("insert", behavior , labWorkWithKey.getKey(), null), labWorkWithKey, user, getServerNotificationPort());
-        return connector.sendCommand(showRequest);
+        CommandRequest request = new CommandRequest(new CommandWithArgument("insert", behavior , labWorkWithKey.getKey(), null), labWorkWithKey, user, getServerNotificationPort());
+        return connector.sendCommand(request);
+    }
+    public CommandResponse updateLabWork(LabWorkWithKey labWorkWithKey){
+        CommandBehavior behavior = commandDefinitions.get("update_id");
+        CommandRequest request = new CommandRequest(new CommandWithArgument("update_id", behavior , labWorkWithKey.getId().toString(), null), labWorkWithKey, user, getServerNotificationPort());
+        return connector.sendCommand(request);
     }
 
     public void login(String login, String password, boolean register) throws Exception {
