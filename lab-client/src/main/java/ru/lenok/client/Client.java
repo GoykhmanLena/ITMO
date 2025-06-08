@@ -25,7 +25,7 @@ public final class Client {
         if (userDetailsOptional && args.length <1 ) {
             printUsageAndExit(userDetailsOptional);
         }
-        else if (!(args.length == 5 || args.length == 6)) {
+        else if (!userDetailsOptional && !(args.length == 5 || args.length == 6)) {
             printUsageAndExit(userDetailsOptional);
         }
 
@@ -68,8 +68,11 @@ public final class Client {
                     break;
             }
         }
+        if (userDetailsOptional && (host == null || port == -1)){
+            printUsageAndExit(userDetailsOptional);
+        }
 
-        if (host == null || username == null || password == null || port == -1) {
+        if (!userDetailsOptional && (host == null || username == null || password == null || port == -1)) {
             printUsageAndExit(userDetailsOptional);
         }
 
