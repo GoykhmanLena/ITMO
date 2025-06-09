@@ -125,7 +125,7 @@ public class MainForm {
         Button helpButton = new Button(languageManager.get("button.help"));
         deleteButton.setDisable(true);
         editButton.setDisable(true);
-        // New buttons
+
         Button infoButton = new Button(languageManager.get("button.info"));
         Button scriptButton = new Button(languageManager.get("button.script"));
 
@@ -246,24 +246,23 @@ public class MainForm {
         return splitPane;
     }
 
-    private void runAsyncWithProgress(ProgressIndicator progressIndicator, Runnable taskBody) {
-        Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() {
-                taskBody.run();
-                return null;
+    private void runAsyncWithProgress(ProgressIndicator progressIndicator, Runnable runnable) {
+        progressIndicator.setVisible(true);
+
+        new Thread(() -> {
+            try {
+                runnable.run();
+                Platform.runLater(() -> {
+                    progressIndicator.setVisible(false);
+                });
+            } catch (Exception ex) {
+                Platform.runLater(() -> {
+                    progressIndicator.setVisible(false);
+                    new Alert(Alert.AlertType.ERROR, ex.toString()).showAndWait();
+                });
             }
-        };
+        }).start();
 
-        task.setOnRunning(e -> progressIndicator.setVisible(true));
-        task.setOnSucceeded(e -> progressIndicator.setVisible(false));
-        task.setOnFailed(e -> {
-            progressIndicator.setVisible(false);
-            Throwable ex = task.getException();
-            Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, "Error: " + ex).showAndWait());
-        });
-
-        new Thread(task).start();
     }
 
     private void showListDialog(String title, String multilineText) {
