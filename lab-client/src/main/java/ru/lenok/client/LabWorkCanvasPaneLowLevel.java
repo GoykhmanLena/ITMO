@@ -59,7 +59,6 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
 
         tooltipLabel.setStyle("-fx-background-color: white; -fx-border-color: gray; -fx-padding: 5; -fx-font-size: 12;");
         tooltipPopup.getContent().add(tooltipLabel);
-        tooltipPopup.setAutoHide(true);
 
         widthProperty().addListener(observable -> {
             resizeCanvas();
@@ -166,7 +165,6 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
                         lastUpdate = now;
                         return;
                     }
-                    double dt = (now - lastUpdate) / 1_000_000_000.0;
                     lastUpdate = now;
 
                     transitionStep(now);
@@ -240,7 +238,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             pos[1] = Math.max(radius, Math.min(height - radius, pos[1]));
         }
 
-        // Обработка столкновений
+
         for (int i = 0; i < labWorks.size(); i++) {
             for (int j = i + 1; j < labWorks.size(); j++) {
                 LabWorkWithKey a = labWorks.get(i);
@@ -301,7 +299,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         labWorks.stream()
-                .sorted((a, b) -> Double.compare(getRadius(b), getRadius(a))) // сортировка по убыванию радиуса
+                .sorted((a, b) -> Double.compare(getRadius(b), getRadius(a)))
                 .forEach(lw -> {
                     double[] pos = positions.get(lw);
                     if (pos == null) return;
@@ -336,10 +334,9 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             double x = e.getX();
             double y = e.getY();
 
-            // от самых больших к самым маленьким — чтобы маленькие могли перекрывать большие
             selectedLabWork = null;
             labWorks.stream()
-                    .sorted((a, b) -> Double.compare(getRadius(a), getRadius(b))) // убывание радиуса
+                    .sorted((a, b) -> Double.compare(getRadius(a), getRadius(b)))
                     .forEachOrdered(lw -> {
                         double[] pos = positions.get(lw);
                         double radius = getRadius(lw);
@@ -371,7 +368,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             }
 
             if (found != null) {
-                if (!found.equals(hoveredLabWork)) {
+                if (found!=(hoveredLabWork)) {
                     hoveredLabWork = found;
                     showTooltip(hoveredLabWork, e.getScreenX(), e.getScreenY());
                 }
