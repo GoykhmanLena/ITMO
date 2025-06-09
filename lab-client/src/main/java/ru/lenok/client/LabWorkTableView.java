@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import ru.lenok.common.models.Coordinates;
 import ru.lenok.common.models.Difficulty;
+import ru.lenok.common.models.Discipline;
 import ru.lenok.common.models.LabWorkWithKey;
 
 import java.text.NumberFormat;
@@ -101,7 +102,7 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
 
         this.<String>addFilterableColumn(languageManager.get("title.discipline"),
                 c -> {
-                    var d = c.getValue().getDiscipline();
+                    Discipline d = c.getValue().getDiscipline();
                     return d.getName() + " (" + integerFormat.format(d.getPracticeHours()) + languageManager.get("label.hour") + ")";
                 },
                 Comparator.nullsLast(String::compareToIgnoreCase),
@@ -124,7 +125,6 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         column.setSortable(true);
         column.setComparator(comparator);
 
-        // Устанавливаем отображение через toStringMapper
         column.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(T item, boolean empty) {
@@ -145,14 +145,7 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         clearFilterButton.setPadding(new Insets(0, 3, 0, 3));
         clearFilterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        Runnable updateFilterButtonStyle = () -> {
-            String filter = columnFilters.get(column);
-            if (filter != null && !filter.isBlank()) {
-                filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #0078D7;");
-            } else {
-                filterButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
-            }
-        };
+
 
         filterButton.setOnAction(e -> {
             String currentFilter = columnFilters.getOrDefault(column, "");
@@ -163,17 +156,17 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
                     columnFilters.put(column, filterText.toLowerCase());
                 }
                 applyFilters();
-                updateFilterButtonStyle.run();
+                updateFilterButtonStyle(filterButton, column);
             });
         });
 
         clearFilterButton.setOnAction(e -> {
             columnFilters.remove(column);
             applyFilters();
-            updateFilterButtonStyle.run();
+            updateFilterButtonStyle(filterButton, column);
         });
 
-        updateFilterButtonStyle.run();
+        updateFilterButtonStyle(filterButton, column);
 
         HBox buttonsBox = new HBox(filterButton, clearFilterButton);
         buttonsBox.setSpacing(5);
@@ -185,33 +178,19 @@ public class LabWorkTableView extends TableView<LabWorkWithKey> {
         headerBox.setPadding(new Insets(2, 0, 2, 0));
         headerBox.setStyle("-fx-alignment: center;");
 
-        headerBox.setOnMouseClicked(event -> {
-            if (event.getTarget() == filterButton || event.getTarget() == clearFilterButton) {
-                return;
-            }
-            if (event.getButton() == MouseButton.PRIMARY) {
-                TableView<LabWorkWithKey> table = column.getTableView();
-                if (table == null) table = this;
-
-                ObservableList<TableColumn<LabWorkWithKey, ?>> sortOrder = table.getSortOrder();
-
-                if (sortOrder.contains(column)) {
-                    column.setSortType(column.getSortType() == TableColumn.SortType.ASCENDING
-                            ? TableColumn.SortType.DESCENDING
-                            : TableColumn.SortType.ASCENDING);
-                } else {
-                    sortOrder.clear();
-                    sortOrder.add(column);
-                    column.setSortType(TableColumn.SortType.ASCENDING);
-                }
-                table.sort();
-            }
-        });
 
         column.setGraphic(headerBox);
 
         getColumns().add(column);
     }
+    void updateFilterButtonStyle(Button button, TableColumn column){
+        String filter = columnFilters.get(column);
+        if (filter != null && !filter.isBlank()) {
+            button.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-text-fill: #0078D7;");
+        } else {
+            button.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        }
+    };
 
     private void applyFilters() {
         filteredData.setPredicate(item -> {
