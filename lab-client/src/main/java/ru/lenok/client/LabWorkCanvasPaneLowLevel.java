@@ -300,30 +300,35 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
-        for (LabWorkWithKey lw : labWorks) {
-            double[] pos = positions.get(lw);
-            if (pos == null) continue;
+        labWorks.stream()
+                .sorted((a, b) -> Double.compare(getRadius(b), getRadius(a))) // сортировка по убыванию радиуса
+                .forEach(lw -> {
+                    double[] pos = positions.get(lw);
+                    if (pos == null) return;
 
-            double radius = getRadius(lw);
-            Color color = getColorForOwner(lw.getOwnerId());
+                    double radius = getRadius(lw);
+                    Color color = getColorForOwner(lw.getOwnerId());
 
-            if (lw.equals(selectedLabWork)) {
-                gc.setStroke(Color.DEEPSKYBLUE);
-                gc.setLineWidth(3);
-            } else {
-                gc.setStroke(Color.BLACK);
-                gc.setLineWidth(1);
-            }
+                    if (lw.equals(selectedLabWork)) {
+                        gc.setStroke(Color.DEEPSKYBLUE);
+                        gc.setLineWidth(3);
+                    } else {
+                        gc.setStroke(Color.BLACK);
+                        gc.setLineWidth(1);
+                    }
 
-            gc.setFill(color);
-            gc.fillOval(pos[0] - radius, pos[1] - radius, radius * 2, radius * 2);
-            gc.strokeOval(pos[0] - radius, pos[1] - radius, radius * 2, radius * 2);
+                    gc.setFill(color);
+                    gc.fillOval(pos[0] - radius, pos[1] - radius, radius * 2, radius * 2);
+                    gc.strokeOval(pos[0] - radius, pos[1] - radius, radius * 2, radius * 2);
 
-            gc.setFill(Color.BLACK);
-            String ownerIdText = String.valueOf(lw.getOwnerId());
-            gc.fillText(ownerIdText, pos[0] - gc.getFont().getSize() / 2, pos[1] + 4);
-        }
+                    gc.setFill(Color.BLACK);
+                    String idText = String.valueOf(lw.getId());
+                    gc.fillText(idText, pos[0] - gc.getFont().getSize() / 2, pos[1] + 4);
+
+                });
     }
+
+
 
     private void setupMouseHandling() {
         canvas.setOnMouseClicked(e -> {
@@ -331,19 +336,21 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             double x = e.getX();
             double y = e.getY();
 
-            for (LabWorkWithKey lw : labWorks) {
-                double[] pos = positions.get(lw);
-                double radius = getRadius(lw);
-                double dx = pos[0] - x;
-                double dy = pos[1] - y;
-                if (dx * dx + dy * dy <= radius * radius) {
-                    selectedLabWork = lw;
-                    if (onLabWorkSelected != null) onLabWorkSelected.accept(lw);
-                    redraw();
-                    return;
-                }
-            }
+            // от самых больших к самым маленьким — чтобы маленькие могли перекрывать большие
             selectedLabWork = null;
+            labWorks.stream()
+                    .sorted((a, b) -> Double.compare(getRadius(a), getRadius(b))) // убывание радиуса
+                    .forEachOrdered(lw -> {
+                        double[] pos = positions.get(lw);
+                        double radius = getRadius(lw);
+                        double dx = pos[0] - x;
+                        double dy = pos[1] - y;
+                        if (dx * dx + dy * dy <= radius * radius && selectedLabWork == null) {
+                            selectedLabWork = lw;
+                            if (onLabWorkSelected != null) onLabWorkSelected.accept(lw);
+                        }
+                    });
+
             redraw();
         });
 
@@ -379,6 +386,7 @@ public class LabWorkCanvasPaneLowLevel extends Pane {
             hideTooltip();
         });
     }
+
 
     private void showTooltip(LabWorkWithKey lw, double screenX, double screenY) {
         String tooltipText = buildTooltipText(lw);
