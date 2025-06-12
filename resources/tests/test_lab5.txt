@@ -1,12 +1,12 @@
 clear
-insert uhvc
-huiiu
-89
-76
+insert new_lab
+laba
+215
+300
 88.5
-htddervjlokk
+be
 IMPOSSIBLE
-mkmjhy
+pum
 120
 info
 history

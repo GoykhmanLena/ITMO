@@ -72,11 +72,12 @@ public class RequestHandler implements IHistoryProvider {
             } catch (Exception e) {
                 return new CommandResponse(e);
             }
+            ClientAddress clientAddress = new ClientAddress(message.getClientIp(), commandRequest.getServerNotificationPort());
+            clientsCache.put(clientAddress, clientAddress);
             HistoryList historyList = historyByClients.get(userFromDb.getId());
             if (historyList == null) {
                 historyList = new HistoryList();
                 historyByClients.put(userFromDb.getId(), historyList);
-                //TODO clientsCache
             }
             historyList.addCommand(commandName);
             return commandController.handle(commandRequest);

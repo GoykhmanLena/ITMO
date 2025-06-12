@@ -185,6 +185,7 @@ public class ServerApplication implements IHistoryProvider {
 
     private void notifyClients(List<LabWorkWithKey> labWorkWithKeys) {
         ConcurrentMap<ClientAddress, ClientAddress> clientsCacheMap = clientsCache.asMap();
+        logger.info("Будут оповещены все клиенты, количество: " + clientsCacheMap.size());
         for (ClientAddress clientAddress : clientsCacheMap.keySet()) {
             CompletableFuture
                     .runAsync(
