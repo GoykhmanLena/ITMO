@@ -1,0 +1,155 @@
+{
+  "pr_lab2": {
+    "id": 7,
+    "ownerId": 1,
+    "name": "Pokemon",
+    "coordinates": {
+      "x": 180.0,
+      "y": 300.0
+    },
+    "creationDate": "2025-04-18T11:12:55.7065203",
+    "minimalPoint": 110.0,
+    "description": "Create your own Pokemons!!!",
+    "difficulty": "NORMAL",
+    "discipline": {
+      "name": "proga",
+      "practiceHours": 200
+    }
+  },
+  "opd_lab2": {
+    "id": 4,
+    "ownerId": 2,
+    "name": "BVM first",
+    "coordinates": {
+      "x": 450.4,
+      "y": 500.1
+    },
+    "creationDate": "2025-04-13T12:08:45.9057606",
+    "minimalPoint": 90.0,
+    "description": "Many numbers 0 and 1",
+    "difficulty": "VERY_EASY",
+    "discipline": {
+      "name": "OPD",
+      "practiceHours": 186
+    }
+  },
+  "pr_lab1": {
+    "id": 2,
+    "ownerId": 1,
+    "name": "Array Java",
+    "coordinates": {
+      "x": 450.8,
+      "y": 200.0
+    },
+    "creationDate": "2025-04-13T12:08:45.8321244",
+    "minimalPoint": 20.0,
+    "description": "Просто попробуй написать минимально рабочий код",
+    "difficulty": "VERY_EASY",
+    "discipline": {
+      "name": "proga",
+      "practiceHours": 200
+    }
+  },
+  "pr_lab3-4": {
+    "id": 8,
+    "ownerId": 1,
+    "name": "java OOP",
+    "coordinates": {
+      "x": 140.0,
+      "y": 400.0
+    },
+    "creationDate": "2025-03-29T12:10:37.9544639",
+    "minimalPoint": 40.0,
+    "description": "Оживи текст",
+    "difficulty": "NORMAL",
+    "discipline": {
+      "name": "proga",
+      "practiceHours": 200
+    }
+  },
+  "opd_lab1": {
+    "id": 1,
+    "ownerId": 2,
+    "name": "Linux commands",
+    "coordinates": {
+      "x": 200.0,
+      "y": 180.0
+    },
+    "creationDate": "2025-03-29T12:09:39.6812286",
+    "minimalPoint": 60.0,
+    "description": "chmod, rm, and other",
+    "difficulty": "VERY_HARD",
+    "discipline": {
+      "name": "OPD",
+      "practiceHours": 186
+    }
+  },
+  "inf_lab1": {
+    "id": 10,
+    "ownerId": 3,
+    "name": "Перевод между СС",
+    "coordinates": {
+      "x": 250.0,
+      "y": 90.0
+    },
+    "creationDate": "2025-04-06T15:10:04.5985935",
+    "minimalPoint": 56.0,
+    "description": "надо много много чиселок переводить",
+    "difficulty": "VERY_EASY",
+    "discipline": {
+      "name": "inform",
+      "practiceHours": 100
+    }
+  },
+  "pr_lab5": {
+    "id": 5,
+    "ownerId": 1,
+    "name": "Collection Java",
+    "coordinates": {
+      "x": 300.0,
+      "y": 150.0
+    },
+    "creationDate": "2025-04-13T14:39:39.108683",
+    "minimalPoint": 32.0,
+    "description": "Создай свою коллекцию",
+    "difficulty": "VERY_HARD",
+    "discipline": {
+      "name": "proga",
+      "practiceHours": 200
+    }
+  },
+  "mat_lab1": {
+    "id": 6,
+    "ownerId": 4,
+    "name": "limits",
+    "coordinates": {
+      "x": 478.0,
+      "y": 478.0
+    },
+    "creationDate": "2025-04-13T12:06:12.4045194",
+    "minimalPoint": 24.0,
+    "description": "Функции, пределы и многое другое",
+    "difficulty": "IMPOSSIBLE",
+    "discipline": {
+      "name": "matan",
+      "practiceHours": 256
+    }
+  },
+  "бжд_lab1": {
+    "id": 3,
+    "ownerId": 5,
+    "name": "ЧС",
+    "coordinates": {
+      "x": 400.0,
+      "y": 300.0
+    },
+    "creationDate": "2025-04-06T14:40:23.2583989",
+    "minimalPoint": 78.0,
+    "description": "Опишите все чс, очень долго и нудно",
+    "difficulty": "NORMAL",
+    "discipline": {
+      "name": "БЖД",
+      "practiceHours": 20
+    }
+  }
+}

@@ -1,0 +1,12 @@
+clear
+insert new_lab
+laba
+215
+300
+88.5
+be
+IMPOSSIBLE
+pum
+120
+info
+history
