@@ -1,0 +1,271 @@
+body {
+    font-family: Arial, sans-serif;
+    color: #A594F9; /* Основной цвет текста, фиолетовый */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    background-image: url('lake_web.jpg'); /* Ваше фоновое изображение */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Полупрозрачный оверлей с пастельно-фиолетовым оттенком для читаемости текста */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(229, 217, 242, 0.35); /* Пастельно-фиолетовый полупрозрачный оверлей */
+    z-index: -1;
+}
+
+.header, .footer {
+    background-color: rgba(165, 148, 249, 0.7); /* Фиолетовый с прозрачностью */
+    color: #ffffff;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header h2 {
+    margin: 5px 0;
+    color: #ffffff;
+}
+
+.container {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.graph, .form, .table, .result-details, .navigation {
+    background-color: rgba(205, 193, 255, 0.61); /* Пастельно-фиолетовый фон */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid rgba(205, 193, 255, 0.72); /* Светлая фиолетовая рамка */
+}
+
+.graph {
+    flex: 1 1 420px;
+    max-width: 420px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 420px;
+}
+
+#graphCanvas {
+    display: block;
+    background-color: rgba(229, 217, 242, 0.63); /* Светлый пастельно-фиолетовый */
+    border: 1px solid rgb(169, 152, 189); /* Более темный фиолетовый */
+    width: 400px;
+    height: 400px;
+}
+
+.form {
+    flex: 1 1 300px;
+    max-width: 400px;
+}
+
+.table {
+    flex: 2 1 600px;
+    max-width: 1000px;
+    overflow-x: auto;
+}
+
+.result-details {
+    flex: 1 1 300px;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Стили для изображений в блоке результата */
+.result-image {
+    max-width: 100%;
+    height: auto;
+    margin-top: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navigation {
+    flex: 1 1 100%;
+    text-align: center;
+}
+.navigation p {
+    margin: 0;
+}
+.navigation a {
+    display: inline-block;
+    background-color: rgba(230, 178, 186, 0.94); /* Пастельно-розовый */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+.navigation a:hover {
+    background-color: #C599B6; /* Темнее розовый при наведении */
+}
+
+
+h3 {
+    color: #A594F9; /* Фиолетовый для заголовков */
+    text-align: center;
+    margin-top: 0;
+}
+
+/* Форма */
+form fieldset {
+    border: 1px solid #C599B6; /* Пастельно-розовая рамка */
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: rgba(220, 186, 206, 0.77); /* Более светлый пастельно-розовый */
+}
+
+form legend {
+    color: #A594F9; /* Фиолетовый */
+    font-weight: bold;
+    padding: 0 10px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555555; /* Темный текст */
+}
+
+form input[type="text"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #FFC0CB; /* Розовая рамка */
+    border-radius: 4px;
+    background-color: rgba(220, 186, 206, 0.77); /* Исправлено: Очень светлый розовый */
+    color: #333333; /* Темный текст */
+}
+
+form input[type="text"]::placeholder {
+    color: #AAAAAA; /* Серый placeholder */
+}
+
+form input[type="button"],
+form button[type="submit"] {
+    background-color: #FFB6C1; /* Светло-розовый */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    transition: background-color 0.3s ease;
+}
+
+form input[type="button"]:hover,
+form button[type="submit"]:hover {
+    background-color: #FF69B4; /* Темнее розовый при наведении */
+}
+
+
+/* Стили для активной кнопки X */
+form #x-block input[type="button"].active-x {
+    background-color: rgba(229, 217, 242, 0.63); /* Светлый пастельно-фиолетовый */
+    color: #fff;
+}
+#x-block input[type='button'].active-x:hover {
+    background-color: #554d91; /* Темнее фиолетовый */
+}
+
+/* Стили для радио кнопок R */
+#r-block label {
+    display: inline-block;
+    margin-right: 15px;
+    color: #555555; /* Темный текст */
+}
+#r-block input[type="radio"] {
+    margin-right: 5px;
+}
+
+
+/* Таблица результатов */
+.resultTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.resultTable th,
+.resultTable td {
+    border: 1px solid #F5EFFF; /* Светлая фиолетовая рамка */
+    padding: 10px;
+    text-align: center;
+    color: #A594F9; /* Фиолетовый текст */
+}
+
+.resultTable th {
+    background-color: rgba(255, 234, 234, 0.66); /* Пастельно-розовый */
+    font-weight: bold;
+    color: #A594F9; /* Фиолетовый для заголовков */
+}
+
+.resultTable tr:nth-child(even) {
+    background-color: #FFF0F5; /* Очень светлый розовый */
+}
+
+.resultTable tr:nth-child(odd) {
+    background-color: #FADADD; /* Более светлый пастельно-розовый */
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    color: #DC143C; /* Яркий розовый для ошибки */
+    font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
+    background-color: #FFDAB9; /* Персиковый для фона ошибки */
+    border: 1px solid #DC143C;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #d8d0ff; /* Фиолетовая рамка */
+    padding: 8px;
+    text-align: left;
+}
+
+table th {
+    background-color: rgba(255, 234, 234, 0.66); /* Пастельно-розовый */
+    color: #A594F9; /* Фиолетовый */
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+    .graph, .form, .table, .result-details {
+        max-width: 90%;
+        margin: 10px auto;
+    }
+}
