@@ -1,0 +1,34 @@
+{
+  "bubuka": {
+    "id": 3,
+    "name": "buuuuuu",
+    "coordinates": {
+      "x": "bjbk",
+      "y": 67.0
+    },
+    "creationDate": "2025-03-23T13:36:52.3604223",
+    "minimalPoint": 87.0,
+    "description": "kjhvc",
+    "difficulty": "VERY_EASY",
+    "discipline": {
+      "name": "kjjbhhgv",
+      "practiceHours": 99
+    }
+  },
+  "jnbbjb": {
+    "id": 4,
+    "name": "njkjop",
+    "coordinates": {
+      "x": 98.4,
+      "y": 90.1
+    },
+    "creationDate": "2025-03-23T13:36:52.36193",
+    "minimalPoint": 90.0,
+    "description": "jopoojnj",
+    "difficulty": "NORMAL",
+    "discipline": {
+      "name": "njiokne",
+      "practiceHours": 234
+    }
+  }
+}
