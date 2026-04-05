@@ -1,3 +1,1 @@
-test file for opi_lab_2
-
-some changes for ex 3.7
+bla bla bla
