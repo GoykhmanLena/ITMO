@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание Person</title>
+</head>
+<body>
+
+<h1>Создание Person</h1>
+
+<form th:action="@{/persons}"
+      th:object="${person}"
+      method="post">
+
+    <div>
+        <label for="name">Имя:</label>
+        <input id="name" type="text" th:field="*{name}">
+        <div th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}"></div>
+    </div>
+
+    <div>
+        <label for="eyeColor">Цвет глаз:</label>
+        <select id="eyeColor" th:field="*{eyeColor}">
+            <option value="">-- выбрать --</option>
+            <option th:each="color : ${T(ru.labs.model.Color).values()}"
+                    th:value="${color}"
+                    th:text="${color}">
+            </option>
+        </select>
+        <div th:if="${#fields.hasErrors('eyeColor')}"
+             th:errors="*{eyeColor}"></div>
+    </div>
+
+    <div>
+        <label for="hairColor">Цвет волос:</label>
+        <select id="hairColor" th:field="*{hairColor}">
+            <option value="">-- не указан --</option>
+            <option th:each="color : ${T(ru.labs.model.Color).values()}"
+                    th:value="${color}"
+                    th:text="${color}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label for="birthday">Дата рождения:</label>
+        <input id="birthday"
+               type="datetime-local"
+               th:field="*{birthday}">
+    </div>
+
+    <div>
+        <label for="weight">Вес:</label>
+        <input id="weight"
+               type="number"
+               th:field="*{weight}">
+        <div th:if="${#fields.hasErrors('weight')}"
+             th:errors="*{weight}"></div>
+    </div>
+
+    <h2>Location</h2>
+
+    <div>
+        <label for="locationX">X:</label>
+        <input id="locationX"
+               type="number"
+               th:field="*{locationX}">
+        <div th:if="${#fields.hasErrors('locationX')}"
+             th:errors="*{locationX}"></div>
+    </div>
+
+    <div>
+        <label for="locationY">Y:</label>
+        <input id="locationY"
+               type="number"
+               step="any"
+               th:field="*{locationY}">
+    </div>
+
+    <div>
+        <label for="locationName">Название Location:</label>
+        <input id="locationName"
+               type="text"
+               th:field="*{locationName}">
+    </div>
+
+    <br>
+
+    <button type="submit">Создать Person</button>
+
+</form>
+
+<br>
+
+<a href="/persons">Вернуться к списку</a>
+
+</body>
+</html>

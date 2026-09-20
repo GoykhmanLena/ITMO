@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр фильма</title>
+</head>
+<body>
+
+<h1 th:text="${movie.name}">Movie</h1>
+
+<p>
+    <strong>ID:</strong>
+    <span th:text="${movie.id}"></span>
+</p>
+
+<p>
+    <strong>Название:</strong>
+    <span th:text="${movie.name}"></span>
+</p>
+
+<p>
+    <strong>Жанр:</strong>
+    <span th:text="${movie.genre}"></span>
+</p>
+
+<p>
+    <strong>Budget:</strong>
+    <span th:text="${movie.budget}"></span>
+</p>
+
+<p>
+    <strong>Total box office:</strong>
+    <span th:text="${movie.totalBoxOffice}"></span>
+</p>
+
+<p>
+    <strong>Oscar count:</strong>
+    <span th:text="${movie.oscarsCount}"></span>
+</p>
+
+<p>
+    <strong>Length:</strong>
+    <span th:text="${movie.length}"></span>
+</p>
+
+<p>
+    <strong>Golden Palm count:</strong>
+    <span th:text="${movie.goldenPalmCount}"></span>
+</p>
+
+<p>
+    <strong>USA box office:</strong>
+    <span th:text="${movie.usaBoxOffice}"></span>
+</p>
+
+<p>
+    <strong>Tagline:</strong>
+    <span th:text="${movie.tagline}"></span>
+</p>
+
+<p>
+    <strong>MPAA rating:</strong>
+    <span th:text="${movie.mpaaRating}"></span>
+</p>
+
+<h2>Coordinates</h2>
+
+<p>
+    <strong>X:</strong>
+    <span th:text="${movie.coordinates.x}"></span>
+</p>
+
+<p>
+    <strong>Y:</strong>
+    <span th:text="${movie.coordinates.y}"></span>
+</p>
+
+<h2>Operator</h2>
+
+<p>
+    <strong>ID:</strong>
+    <span th:text="${movie.operator.id}"></span>
+</p>
+
+<p>
+    <strong>Name:</strong>
+    <span th:text="${movie.operator.name}"></span>
+</p>
+
+<h2>Director</h2>
+
+<div th:if="${movie.director != null}">
+    <p>
+        <strong>ID:</strong>
+        <span th:text="${movie.director.id}"></span>
+    </p>
+    <p>
+        <strong>Name:</strong>
+        <span th:text="${movie.director.name}"></span>
+    </p>
+</div>
+
+<div th:if="${movie.director == null}">
+    <p>Не указан</p>
+</div>
+
+<h2>Screenwriter</h2>
+
+<div th:if="${movie.screenwriter != null}">
+    <p>
+        <strong>ID:</strong>
+        <span th:text="${movie.screenwriter.id}"></span>
+    </p>
+    <p>
+        <strong>Name:</strong>
+        <span th:text="${movie.screenwriter.name}"></span>
+    </p>
+</div>
+
+<div th:if="${movie.screenwriter == null}">
+    <p>Не указан</p>
+</div>
+
+<br>
+
+<a th:href="@{/movies}">Вернуться к списку</a>
+
+</body>
+</html>

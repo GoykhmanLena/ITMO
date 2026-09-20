@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Movies</title>
+</head>
+<body>
+
+<h1>Movies</h1>
+
+<a href="/movies/new">
+    <button type="button">Создать Movie</button>
+</a>
+
+<br><br>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Coordinates X</th>
+        <th>Coordinates Y</th>
+        <th>Creation date</th>
+        <th>Oscars count</th>
+        <th>Budget</th>
+        <th>Total box office</th>
+        <th>MPAA rating</th>
+        <th>Director</th>
+        <th>Screenwriter</th>
+        <th>Operator</th>
+        <th>Length</th>
+        <th>Golden Palm count</th>
+        <th>USA box office</th>
+        <th>Tagline</th>
+        <th>Genre</th>
+        <th>Просмотр</th>
+        <th>Редактирование</th>
+        <th>Удаление</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <tr th:each="movie : ${movies}">
+
+        <td th:text="${movie.id}"></td>
+
+        <td th:text="${movie.name}"></td>
+
+        <td th:text="${movie.coordinates.x}"></td>
+
+        <td th:text="${movie.coordinates.y}"></td>
+
+        <td th:text="${movie.creationDate}"></td>
+
+        <td th:text="${movie.oscarsCount}"></td>
+
+        <td th:text="${movie.budget}"></td>
+
+        <td th:text="${movie.totalBoxOffice}"></td>
+
+        <td th:text="${movie.mpaaRating}"></td>
+
+        <td>
+            <span th:if="${movie.director != null}"
+                  th:text="${movie.director.id + ' — ' + movie.director.name}">
+            </span>
+            <span th:if="${movie.director == null}">
+                —
+            </span>
+        </td>
+
+        <td>
+            <span th:if="${movie.screenwriter != null}"
+                  th:text="${movie.screenwriter.id + ' — ' + movie.screenwriter.name}">
+            </span>
+            <span th:if="${movie.screenwriter == null}">
+                —
+            </span>
+        </td>
+
+        <td th:text="${movie.operator.id + ' — ' + movie.operator.name}"></td>
+
+        <td th:text="${movie.length}"></td>
+
+        <td th:text="${movie.goldenPalmCount}"></td>
+
+        <td th:text="${movie.usaBoxOffice}"></td>
+
+        <td th:text="${movie.tagline}"></td>
+
+        <td th:text="${movie.genre}"></td>
+
+        <td>
+            <a th:href="@{/movies/{id}(id=${movie.id})}">
+                Открыть
+            </a>
+        </td>
+
+        <td>
+            <a th:href="@{/movies/{id}/edit(id=${movie.id})}">
+                Редактировать
+            </a>
+        </td>
+
+        <td>
+            <form th:action="@{/movies/{id}/delete(id=${movie.id})}"
+                  method="post"
+                  onsubmit="return confirm('Удалить этот фильм?');">
+
+                <button type="submit">Удалить</button>
+
+            </form>
+        </td>
+
+    </tr>
+
+    </tbody>
+</table>
+
+<br>
+
+<div>
+    <span>
+        Страница
+        <span th:text="${currentPage + 1}"></span>
+        из
+        <span th:text="${totalPages}"></span>
+    </span>
+
+    <span>
+        Всего объектов:
+        <span th:text="${totalItems}"></span>
+    </span>
+</div>
+
+<br>
+
+<div>
+
+    <a th:if="${currentPage > 0}"
+       th:href="@{/movies(page=${currentPage - 1}, size=${size})}">
+        ← Предыдущая
+    </a>
+
+    <span th:if="${currentPage > 0}">
+        |
+    </span>
+
+    <span th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}">
+
+        <a th:if="${pageNumber != currentPage}"
+           th:href="@{/movies(page=${pageNumber}, size=${size})}"
+           th:text="${pageNumber + 1}">
+        </a>
+
+        <strong th:if="${pageNumber == currentPage}"
+                th:text="${pageNumber + 1}">
+        </strong>
+
+        <span> </span>
+
+    </span>
+
+    <span th:if="${currentPage < totalPages - 1}">
+        |
+    </span>
+
+    <a th:if="${currentPage < totalPages - 1}"
+       th:href="@{/movies(page=${currentPage + 1}, size=${size})}">
+        Следующая →
+    </a>
+
+</div>
+
+</body>
+</html>

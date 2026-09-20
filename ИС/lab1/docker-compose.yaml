@@ -1,0 +1,15 @@
+services:
+  pg:
+    image: postgres:17
+    container_name: lab1-pg
+    environment:
+      POSTGRES_DB: studs
+      POSTGRES_USER: lab_user
+      POSTGRES_PASSWORD: lab_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

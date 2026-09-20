@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование фильма</title>
+</head>
+<body>
+
+<h1>Редактирование фильма</h1>
+
+<form th:action="@{/movies/{id}/edit(id=${movieId})}"
+      th:object="${movie}"
+      method="post">
+
+    <div>
+        <label for="name">Название:</label>
+        <input id="name" type="text" th:field="*{name}">
+        <div th:if="${#fields.hasErrors('name')}"
+             th:errors="*{name}"></div>
+    </div>
+
+    <h2>Coordinates</h2>
+
+    <div>
+        <label for="x">X:</label>
+        <input id="x" type="number" th:field="*{x}">
+        <div th:if="${#fields.hasErrors('x')}"
+             th:errors="*{x}"></div>
+    </div>
+
+    <div>
+        <label for="y">Y:</label>
+        <input id="y" type="number" step="any" th:field="*{y}">
+        <div th:if="${#fields.hasErrors('y')}"
+             th:errors="*{y}"></div>
+    </div>
+
+    <div>
+        <label for="oscarsCount">Oscar count:</label>
+        <input id="oscarsCount"
+               type="number"
+               th:field="*{oscarsCount}">
+        <div th:if="${#fields.hasErrors('oscarsCount')}"
+             th:errors="*{oscarsCount}"></div>
+    </div>
+
+    <div>
+        <label for="budget">Budget:</label>
+        <input id="budget"
+               type="number"
+               step="any"
+               th:field="*{budget}">
+        <div th:if="${#fields.hasErrors('budget')}"
+             th:errors="*{budget}"></div>
+    </div>
+
+    <div>
+        <label for="totalBoxOffice">Total box office:</label>
+        <input id="totalBoxOffice"
+               type="number"
+               th:field="*{totalBoxOffice}">
+        <div th:if="${#fields.hasErrors('totalBoxOffice')}"
+             th:errors="*{totalBoxOffice}"></div>
+    </div>
+
+    <div>
+        <label for="operatorId">Оператор:</label>
+        <select id="operatorId" th:field="*{operatorId}">
+            <option value="">-- выбрать оператора --</option>
+
+            <option th:each="person : ${persons}"
+                    th:value="${person.id}"
+                    th:text="${person.id + ' — ' + person.name}">
+            </option>
+        </select>
+
+        <div th:if="${#fields.hasErrors('operatorId')}"
+             th:errors="*{operatorId}">
+        </div>
+    </div>
+
+    <div>
+        <label for="directorId">Режиссёр:</label>
+
+        <select id="directorId" th:field="*{directorId}">
+            <option value="">-- не выбран --</option>
+
+            <option th:each="person : ${persons}"
+                    th:value="${person.id}"
+                    th:text="${person.id + ' — ' + person.name}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label for="screenwriterId">Сценарист:</label>
+
+        <select id="screenwriterId"
+                th:field="*{screenwriterId}">
+
+            <option value="">-- не выбран --</option>
+
+            <option th:each="person : ${persons}"
+                    th:value="${person.id}"
+                    th:text="${person.id + ' — ' + person.name}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label for="length">Length:</label>
+
+        <input id="length"
+               type="number"
+               th:field="*{length}">
+
+        <div th:if="${#fields.hasErrors('length')}"
+             th:errors="*{length}">
+        </div>
+    </div>
+
+    <div>
+        <label for="goldenPalmCount">Golden palm count:</label>
+
+        <input id="goldenPalmCount"
+               type="number"
+               th:field="*{goldenPalmCount}">
+
+        <div th:if="${#fields.hasErrors('goldenPalmCount')}"
+             th:errors="*{goldenPalmCount}">
+        </div>
+    </div>
+
+    <div>
+        <label for="usaBoxOffice">USA box office:</label>
+
+        <input id="usaBoxOffice"
+               type="number"
+               step="any"
+               th:field="*{usaBoxOffice}">
+
+        <div th:if="${#fields.hasErrors('usaBoxOffice')}"
+             th:errors="*{usaBoxOffice}">
+        </div>
+    </div>
+
+    <div>
+        <label for="tagline">Tagline:</label>
+
+        <input id="tagline"
+               type="text"
+               th:field="*{tagline}">
+
+        <div th:if="${#fields.hasErrors('tagline')}"
+             th:errors="*{tagline}">
+        </div>
+    </div>
+
+    <div>
+        <label for="genre">Genre:</label>
+
+        <select id="genre" th:field="*{genre}">
+            <option value="">-- выбрать жанр --</option>
+
+            <option th:each="genre : ${T(ru.labs.model.MovieGenre).values()}"
+                    th:value="${genre}"
+                    th:text="${genre}">
+            </option>
+        </select>
+
+        <div th:if="${#fields.hasErrors('genre')}"
+             th:errors="*{genre}">
+        </div>
+    </div>
+
+    <div>
+        <label for="mpaaRating">MPAA rating:</label>
+
+        <select id="mpaaRating"
+                th:field="*{mpaaRating}">
+
+            <option value="">-- не указан --</option>
+
+            <option th:each="rating : ${T(ru.labs.model.MpaaRating).values()}"
+                    th:value="${rating}"
+                    th:text="${rating}">
+            </option>
+        </select>
+    </div>
+
+    <br>
+
+    <button type="submit">Сохранить изменения</button>
+
+</form>
+
+<br>
+
+<a th:href="@{/movies/{id}(id=${movieId})}">
+    Отмена
+</a>
+
+</body>
+</html>
