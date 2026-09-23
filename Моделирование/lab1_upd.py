@@ -125,6 +125,10 @@ plt.xlabel("Номер измерения")
 plt.ylabel("Значение")
 plt.title("График заданной числовой последовательности")
 plt.grid()
+
+
+plt.tight_layout()
+plt.savefig("given_graph.png", dpi=100)
 plt.show()
 
 # Автокорреляционный анализ
@@ -142,6 +146,9 @@ plt.xlabel("Сдвиг k")
 plt.ylabel("Коэффициент автокорреляции")
 plt.title("Автокорреляционная функция заданной последовательности")
 plt.grid()
+
+plt.tight_layout()
+plt.savefig("autokor_given.png", dpi=100)
 plt.show()
 
 # гистограмма
@@ -150,6 +157,9 @@ plt.xlabel("Значение")
 plt.ylabel("Частота")
 plt.title("Гистограмма распределения частот")
 plt.grid()
+
+plt.tight_layout()
+plt.savefig("given_raspred.png", dpi=100)
 plt.show()
 
 
@@ -233,8 +243,10 @@ plt.xlabel("Номер измерения")
 plt.ylabel("Значение")
 plt.title("График сгенерированной числовой последовательности")
 plt.grid()
-plt.show()
 
+plt.tight_layout()
+plt.savefig("generated_graph.png", dpi=100)
+plt.show()
 
 generated_autocorr = calculate_autocorrelation(generated_nums)
 
@@ -254,16 +266,20 @@ plt.xlabel("Сдвиг k")
 plt.ylabel("Коэффициент автокорреляции")
 plt.title("Автокорреляционная функция сгенерированной последовательности")
 plt.grid()
-plt.show()
 
+plt.tight_layout()
+plt.savefig("autokor_generated.png", dpi=100)
+plt.show()
 # гистограмма 2
 plt.hist(generated_nums, bins=20)
 plt.xlabel("Значение")
 plt.ylabel("Частота")
 plt.title("Гистограмма распределения частот сгенерированной последовательности")
 plt.grid()
-plt.show()
 
+plt.tight_layout()
+plt.savefig("generated_raspred.png", dpi=100)
+plt.show()
 
 correlation = np.corrcoef(x, generated_nums)[0, 1]
 

@@ -1,15 +1,21 @@
 services:
-  pg:
-    image: postgres:17
-    container_name: lab1-pg
+  db:
+    image: postgres:16
     environment:
       POSTGRES_DB: studs
-      POSTGRES_USER: lab_user
-      POSTGRES_PASSWORD: lab_password
+      POSTGRES_USER: lena
+      POSTGRES_PASSWORD: postgres_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  tomcat:
+    image: tomcat:10.1-jdk21
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./target:/usr/local/tomcat/webapps
 
 volumes:
   postgres_data:
