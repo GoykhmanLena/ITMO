@@ -3,19 +3,22 @@ services:
     image: postgres:16
     environment:
       POSTGRES_DB: studs
-      POSTGRES_USER: lena
-      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   tomcat:
     image: tomcat:10.1-jdk21
+    container_name: lab1-tomcat
     ports:
       - "8080:8080"
     volumes:
-      - ./target:/usr/local/tomcat/webapps
+      - ./target/lab1.war:/usr/local/tomcat/webapps/ROOT.war
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
