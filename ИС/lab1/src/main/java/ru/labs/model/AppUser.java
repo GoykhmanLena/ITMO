@@ -6,28 +6,24 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "coordinates")
+@Table(name = "app_users")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Coordinates {
+public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private long x;
+    @Column(unique = true, nullable = false)
+    private String username;
 
-    @NotNull
-    @DecimalMin(value = "-176.0", inclusive = false, message = "Значение должно быть больше -176")
     @Column(nullable = false)
-    private Float y;
+    private String password;
 }

@@ -14,6 +14,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -31,16 +33,16 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotBlank(message = "Строка не может быть пустой")
     @Column(nullable = false)
     private String name;
 
+    @Valid
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "coordinates_id", nullable = false)
     private Coordinates coordinates;
 
-    @NotNull
     @Column(name = "creation_date", nullable = false)
     private LocalDateTime creationDate;
 
@@ -61,16 +63,16 @@ public class Movie {
     @Column(name = "mpaa_rating", nullable = true)
     private MpaaRating mpaaRating;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "director_id", nullable = true)
     private Person director;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "screenwriter_id", nullable = true)
     private Person screenwriter;
 
     @NotNull
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "operator_id", nullable = false)
     private Person operator;
 
@@ -86,7 +88,7 @@ public class Movie {
     @Column(name = "usa_box_office", nullable = false)
     private float usaBoxOffice;
 
-    @NotNull
+    @NotBlank(message = "Строка не может быть пустой")
     @Column(nullable = false)
     private String tagline;
 
