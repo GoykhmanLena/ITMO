@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.labs.dao.PersonDao;
+import ru.labs.dto.PersonDto;
 import ru.labs.model.Person;
 
 @Service
@@ -49,5 +50,40 @@ public class PersonService {
         if (person != null) {
             personDao.delete(person);
         }
+    }
+
+    @Transactional
+    public void saveFromDto(PersonDto dto) {
+        Person person;
+        if (dto.getId() != null) {
+            person = personDao.findById(dto.getId());
+        } else {
+            person = new Person();
+        }
+
+        person.setName(dto.getName());
+        person.setEyeColor(dto.getEyeColor());
+        person.setHairColor(dto.getHairColor());
+        person.setWeight(dto.getWeight());
+        person.setLocation(dto.getLocation());
+
+        if (person.getId() == null) {
+            personDao.save(person);
+        } else {
+            personDao.update(person);
+        }
+    }
+
+    public PersonDto convertToDto(Person person) {
+        if (person == null)
+            return null;
+        PersonDto dto = new PersonDto();
+        dto.setId(person.getId());
+        dto.setName(person.getName());
+        dto.setEyeColor(person.getEyeColor());
+        dto.setHairColor(person.getHairColor());
+        dto.setWeight(person.getWeight());
+        dto.setLocation(person.getLocation());
+        return dto;
     }
 }

@@ -7,18 +7,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.labs.dao.MovieDao;
+import ru.labs.dto.MovieDto;
+import ru.labs.dto.PersonDto;
 import ru.labs.model.Movie;
 import ru.labs.model.MovieGenre;
+import ru.labs.model.Person;
 
 @Service
 @Transactional
 public class MovieService {
 
     private final MovieDao movieDao;
+    private final PersonService personService;
 
     @Autowired
-    public MovieService(MovieDao movieDao) {
+    public MovieService(MovieDao movieDao, PersonService personService) {
         this.movieDao = movieDao;
+        this.personService = personService;
     }
 
     @Transactional(readOnly = true)
@@ -68,5 +73,96 @@ public class MovieService {
 
     public void redistributeOscars(MovieGenre fromGenre, MovieGenre toGenre) {
         movieDao.redistributeOscars(fromGenre, toGenre);
+    }
+
+    @Transactional
+    public void saveFromDto(MovieDto dto) {
+        Movie movie;
+        if (dto.getId() != null) {
+            movie = movieDao.findById(dto.getId());
+        } else {
+            movie = new Movie();
+            movie.setCreationDate(java.time.LocalDateTime.now());
+        }
+
+        movie.setName(dto.getName());
+        movie.setTagline(dto.getTagline());
+        movie.setGenre(dto.getGenre());
+        movie.setBudget(dto.getBudget());
+        movie.setTotalBoxOffice(dto.getTotalBoxOffice());
+        movie.setUsaBoxOffice(dto.getUsaBoxOffice());
+        movie.setOscarsCount(dto.getOscarsCount());
+        movie.setGoldenPalmCount(dto.getGoldenPalmCount());
+        movie.setLength(dto.getLength());
+        movie.setCoordinates(dto.getCoordinates());
+        movie.setMpaaRating(dto.getMpaaRating());
+
+        movie.setOperator(processPerson(dto.getOperator()));
+        movie.setDirector(processPerson(dto.getDirector()));
+        movie.setScreenwriter(processPerson(dto.getScreenwriter()));
+
+        if (movie.getId() == null) {
+            movieDao.save(movie);
+        } else {
+            movieDao.update(movie);
+        }
+    }
+
+    private Person processPerson(PersonDto pDto) {
+        if (pDto == null)
+            return null;
+
+        if (pDto.getId() != null) {
+            return personService.getById(pDto.getId());
+        }
+
+        if (pDto.getName() != null && !pDto.getName().trim().isEmpty()) {
+            Person person = new Person();
+            person.setName(pDto.getName());
+            person.setEyeColor(pDto.getEyeColor());
+            person.setHairColor(pDto.getHairColor());
+            person.setWeight(pDto.getWeight());
+            person.setLocation(pDto.getLocation());
+
+            personService.create(person);
+            return person;
+        }
+        return null;
+    }
+
+    public MovieDto convertToDto(Movie movie) {
+        if (movie == null)
+            return null;
+        MovieDto dto = new MovieDto();
+        dto.setId(movie.getId());
+        dto.setName(movie.getName());
+        dto.setTagline(movie.getTagline());
+        dto.setGenre(movie.getGenre());
+        dto.setBudget(movie.getBudget());
+        dto.setTotalBoxOffice(movie.getTotalBoxOffice());
+        dto.setUsaBoxOffice(movie.getUsaBoxOffice());
+        dto.setOscarsCount(movie.getOscarsCount());
+        dto.setGoldenPalmCount(movie.getGoldenPalmCount());
+        dto.setLength(movie.getLength());
+        dto.setCoordinates(movie.getCoordinates());
+        dto.setMpaaRating(movie.getMpaaRating());
+
+        dto.setOperator(personToDto(movie.getOperator()));
+        dto.setDirector(personToDto(movie.getDirector()));
+        dto.setScreenwriter(personToDto(movie.getScreenwriter()));
+        return dto;
+    }
+
+    private PersonDto personToDto(Person person) {
+        if (person == null)
+            return null;
+        PersonDto dto = new PersonDto();
+        dto.setId(person.getId());
+        dto.setName(person.getName());
+        dto.setEyeColor(person.getEyeColor());
+        dto.setHairColor(person.getHairColor());
+        dto.setWeight(person.getWeight());
+        dto.setLocation(person.getLocation());
+        return dto;
     }
 }

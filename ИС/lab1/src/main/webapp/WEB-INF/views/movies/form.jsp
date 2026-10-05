@@ -41,6 +41,18 @@
         </div>
 
         <div class="form-group">
+            <p>MPAA Rating (optional):
+                <form:select path="mpaaRating">
+                    <form:option value="">— none —</form:option>
+                        <c:forEach var="rating" items="${mpaaRatings}">
+                            <form:option value="${rating}">${rating}</form:option>
+                        </c:forEach>
+                    </form:select>
+                </p>
+                <form:errors path="mpaaRating" cssClass="error"/>
+        </div>
+
+        <div class="form-group">
             <p>Budget: <form:input type="number" step="0.01" min="0.01" path="budget" required="required"/></p>
             <form:errors path="budget" cssClass="error"/>
         </div>

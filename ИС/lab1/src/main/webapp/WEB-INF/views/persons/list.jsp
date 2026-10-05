@@ -49,5 +49,18 @@
         </c:forEach>
         </tbody>
     </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <script>
+            var socket = new SockJS('${pageContext.request.contextPath}/ws');
+            var stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/persons', function (message) {
+                    window.location.reload();
+                });
+            });
+        </script>
 </body>
 </html>
