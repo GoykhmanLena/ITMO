@@ -147,22 +147,9 @@ public class MovieService {
         dto.setCoordinates(movie.getCoordinates());
         dto.setMpaaRating(movie.getMpaaRating());
 
-        dto.setOperator(personToDto(movie.getOperator()));
-        dto.setDirector(personToDto(movie.getDirector()));
-        dto.setScreenwriter(personToDto(movie.getScreenwriter()));
-        return dto;
-    }
-
-    private PersonDto personToDto(Person person) {
-        if (person == null)
-            return null;
-        PersonDto dto = new PersonDto();
-        dto.setId(person.getId());
-        dto.setName(person.getName());
-        dto.setEyeColor(person.getEyeColor());
-        dto.setHairColor(person.getHairColor());
-        dto.setWeight(person.getWeight());
-        dto.setLocation(person.getLocation());
+        dto.setOperator(personService.convertToDto(movie.getOperator()));
+        dto.setDirector(personService.convertToDto(movie.getDirector()));
+        dto.setScreenwriter(personService.convertToDto(movie.getScreenwriter()));
         return dto;
     }
 }
