@@ -30,13 +30,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 antMatcher("/register"),
                                 antMatcher("/login"),
-                                antMatcher("/ws/**"))
+                                antMatcher("/ws/**"),
+                                antMatcher("/static/**"))
                         .permitAll()
 
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/movies", true))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll())
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }

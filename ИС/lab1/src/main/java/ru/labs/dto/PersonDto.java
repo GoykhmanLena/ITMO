@@ -1,5 +1,7 @@
 package ru.labs.dto;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +23,8 @@ public class PersonDto {
     private Color eyeColor;
 
     private Color hairColor;
+
+    private LocalDateTime birthday;
 
     @NotNull
     @Positive(message = "Вес должен быть больше 0")

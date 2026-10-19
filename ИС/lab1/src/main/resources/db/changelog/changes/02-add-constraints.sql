@@ -1,6 +1,3 @@
---liquibase formatted sql
-
---changeset lab1:02-add-constraints splitStatements:true
 ALTER TABLE movies DROP CONSTRAINT IF EXISTS check_movie_name_not_empty;
 ALTER TABLE movies ADD CONSTRAINT check_movie_name_not_empty CHECK (length(trim(name)) > 0);
 

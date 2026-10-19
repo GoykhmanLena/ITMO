@@ -34,6 +34,15 @@ public class RootConfig {
     }
 
     @Bean
+    public SpringLiquibase liquibase(DataSource dataSource) {
+        SpringLiquibase liquibase = new SpringLiquibase();
+        liquibase.setDataSource(dataSource);
+        liquibase.setChangeLog("classpath:db/changelog/db.changelog-master.xml");
+        return liquibase;
+    }
+
+    @Bean
+    @DependsOn("liquibase")
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
@@ -41,19 +50,10 @@ public class RootConfig {
 
         EclipseLinkJpaVendorAdapter adapter = new EclipseLinkJpaVendorAdapter();
         adapter.setShowSql(true);
-        adapter.setGenerateDdl(true);
+        adapter.setGenerateDdl(false);
         emf.setJpaVendorAdapter(adapter);
 
         return emf;
-    }
-
-    @Bean
-    @DependsOn("entityManagerFactory")
-    public SpringLiquibase liquibase(DataSource dataSource) {
-        SpringLiquibase liquibase = new SpringLiquibase();
-        liquibase.setDataSource(dataSource);
-        liquibase.setChangeLog("classpath:db/changelog/db.changelog-master.xml");
-        return liquibase;
     }
 
     @Bean

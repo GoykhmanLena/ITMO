@@ -1,6 +1,3 @@
---liquibase formatted sql
-
---changeset lab1:01-create-functions runOnChange:true splitStatements:false
 CREATE OR REPLACE FUNCTION delete_movies_by_genre(p_genre VARCHAR)
 RETURNS VOID AS $$
 BEGIN

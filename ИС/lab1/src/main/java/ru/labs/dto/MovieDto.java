@@ -1,5 +1,7 @@
 package ru.labs.dto;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -48,6 +50,8 @@ public class MovieDto {
     private Long length;
 
     private MpaaRating mpaaRating;
+
+    private LocalDateTime creationDate;
 
     @NotNull
     private Coordinates coordinates;

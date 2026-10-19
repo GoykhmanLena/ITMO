@@ -58,6 +58,18 @@ public class MovieDao {
                 .getSingleResult();
     }
 
+    public long count(String nameFilter) {
+        if (nameFilter == null || nameFilter.trim().isEmpty()) {
+            return count();
+        }
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Movie> root = cq.from(Movie.class);
+        cq.select(cb.count(root));
+        cq.where(cb.equal(root.get("name"), nameFilter));
+        return em.createQuery(cq).getSingleResult();
+    }
+
     public void save(Movie movie) {
         em.persist(movie);
     }
@@ -70,33 +82,30 @@ public class MovieDao {
         em.remove(em.contains(movie) ? movie : em.merge(movie));
     }
 
+    public void deleteByGenre(MovieGenre genre) {
+        em.createNativeQuery("SELECT delete_movies_by_genre(:genre)")
+                .setParameter("genre", genre.name())
+                .getSingleResult();
+    }
+
     @SuppressWarnings("unchecked")
     public List<Movie> findByNameStartingWith(String prefix) {
-        return em.createNativeQuery("SELECT * FROM get_movies_by_name_prefix(?1)", Movie.class)
-                .setParameter(1, prefix)
+        return em.createNativeQuery("SELECT * FROM get_movies_by_name_prefix(:prefix)", Movie.class)
+                .setParameter("prefix", prefix)
                 .getResultList();
     }
 
     @SuppressWarnings("unchecked")
     public List<Movie> findByGenreLessThan(MovieGenre genre) {
-        return em.createNativeQuery("SELECT * FROM get_movies_by_genre_less_than(?1)", Movie.class)
-                .setParameter(1, genre.name())
+        return em.createNativeQuery("SELECT * FROM get_movies_by_genre_less_than(:genre)", Movie.class)
+                .setParameter("genre", genre.name())
                 .getResultList();
     }
 
-    public void deleteByGenre(MovieGenre genre) {
-        em.createNativeQuery("SELECT delete_movies_by_genre(?1)")
-                .setParameter(1, genre.name())
-                .getSingleResult();
-    }
-
     public void redistributeOscars(MovieGenre fromGenre, MovieGenre toGenre) {
-        em.createNativeQuery("SELECT redistribute_oscars(?1, ?2)")
-                .setParameter(1, fromGenre.name())
-                .setParameter(2, toGenre.name())
+        em.createNativeQuery("SELECT redistribute_oscars(:from, :to)")
+                .setParameter("from", fromGenre.name())
+                .setParameter("to", toGenre.name())
                 .getSingleResult();
-
-        em.getEntityManagerFactory().getCache().evict(Movie.class);
-        em.clear();
     }
 }

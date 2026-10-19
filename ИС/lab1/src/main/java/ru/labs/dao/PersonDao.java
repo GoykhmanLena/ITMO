@@ -23,6 +23,18 @@ public class PersonDao {
                 .getResultList();
     }
 
+    public List<Person> findAll(int page, int size) {
+        return em.createQuery("SELECT p FROM Person p ORDER BY p.id", Person.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    public long count() {
+        return em.createQuery("SELECT COUNT(p) FROM Person p", Long.class)
+                .getSingleResult();
+    }
+
     public void save(Person person) {
         em.persist(person);
     }

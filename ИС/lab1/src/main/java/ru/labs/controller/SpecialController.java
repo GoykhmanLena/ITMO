@@ -47,6 +47,8 @@ public class SpecialController {
     public String searchByName(@RequestParam String prefix, Model model) {
         model.addAttribute("moviesResult", movieService.findByNameStartingWith(prefix));
         model.addAttribute("genres", MovieGenre.values());
+        model.addAttribute("searchPrefix", prefix);
+        model.addAttribute("moviesSearchExecuted", true);
         return "special/index";
     }
 
@@ -54,6 +56,8 @@ public class SpecialController {
     public String genreLessThan(@RequestParam MovieGenre genre, Model model) {
         model.addAttribute("moviesResult", movieService.findByGenreLessThan(genre));
         model.addAttribute("genres", MovieGenre.values());
+        model.addAttribute("selectedGenreLessThan", genre);
+        model.addAttribute("moviesSearchExecuted", true);
         return "special/index";
     }
 
@@ -61,6 +65,7 @@ public class SpecialController {
     public String directorsNoOscars(Model model) {
         model.addAttribute("personsResult", personService.getDirectorsWithoutOscars());
         model.addAttribute("genres", MovieGenre.values());
+        model.addAttribute("directorsSearchExecuted", true);
         return "special/index";
     }
 
